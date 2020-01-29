@@ -22,10 +22,12 @@ namespace HandSlider
         Dictionary<int, double> histoR = new Dictionary<int, double>();
         Dictionary<int, double> histoG = new Dictionary<int, double>();
         Dictionary<int, double> histoB = new Dictionary<int, double>();
+        Dilation dilation = new Dilation();
         FilterInfoCollection fic;
         Graphics graphics, g;
+        Grayscale grayscale = Grayscale.CommonAlgorithms.BT709;
         ImageAttributes wrapMode;
-        Opening opening = new Opening(new short[5,5]);
+        Opening opening = new Opening(new short[3,3]);
         Pen rectPen = new Pen(Color.Blue);
         Rectangle destRect = new Rectangle(0, 0, 320, 240);
         Threshold t = new Threshold();
@@ -47,10 +49,10 @@ namespace HandSlider
             vcd = new VideoCaptureDevice(fic[0].MonikerString);
             vcd.NewFrame += new NewFrameEventHandler(newFrame);
             vcd.Start();
-            
-            //pictureBox3.SuspendLayout();
-            //pictureBox3.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox3_Paint);
-            //pictureBox3.ResumeLayout();
+
+            pictureBox3.SuspendLayout();
+            pictureBox3.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox3_Paint);
+            pictureBox3.ResumeLayout();
 
             //panel1.HorizontalScroll.Value = panel1.HorizontalScroll.Maximum;
         }
@@ -71,8 +73,10 @@ namespace HandSlider
 
             bit = threshold_lockbit_hsv(bit);
 
-            //bit = Grayscale.CommonAlgorithms.BT709.Apply(bit);
-            //bit = opening.Apply(bit);
+            //bit = grayscale.Apply(bit);
+            //dilation.ApplyInPlace(bit);
+            //opening.ApplyInPlace(bit);
+            
             //bit = OpenMorphologyFilter(bit, 3, false, false, false);
 
             //CannyEdgeDetector filter = new CannyEdgeDetector();
@@ -89,16 +93,15 @@ namespace HandSlider
 
             lock (pictureBox2)
             {
-                //Put into picturebox
                 pictureBox2.Image = bit.Clone() as Bitmap;
             }
 
-            //lock (pictureBox3)
-            //{
-            //    pictureBox3.Image = bit.Clone() as Bitmap;
-            //}
+            lock (pictureBox3)
+            {
+                pictureBox3.Image = bit.Clone() as Bitmap;
+            }
 
-            //bit3 = bit.Clone() as Bitmap;
+            bit3 = bit.Clone() as Bitmap;
 
             //throw new NotImplementedException();
         }
@@ -117,14 +120,14 @@ namespace HandSlider
                     g.DrawRectangle(rectPen, blob.Rectangle);
                 }
 
-                //if (blobs[0] != null)
-                //{
-                    //blobCounter.ExtractBlobsImage(bit2, blobs[0], true);
+                if (blobs != null && blobs.Length != 0)
+                {
+                    blobCounter.ExtractBlobsImage(bit2, blobs[0], true);
 
-                    //pictureBox4.Image = blobs[0].Image.ToManagedImage();
+                    pictureBox4.Image = blobs[0].Image.ToManagedImage();
 
-                //    pictureBox4.Image = new ExtractBiggestBlob().Apply(bit2);
-                //}
+                    pictureBox4.Image = new ExtractBiggestBlob().Apply(bit2);
+                }
             }
 
             //pictureBox3.Image = new Bitmap(320, 240, g);
@@ -264,20 +267,38 @@ namespace HandSlider
                     int oldGreen = pixels[currentLine + x + 1];
                     int oldRed = pixels[currentLine + x + 2];
 
+                    double redAksen = 1 / 3;
+                    double greenAksen = 1 / 3;
+                    double blueAksen = 1 / 3;
+
+                    if (oldBlue != 0 || oldGreen != 0 || oldRed != 0)
+                    {
+                        redAksen = oldRed / (oldRed + oldGreen + oldBlue);
+                        greenAksen = oldGreen / (oldRed + oldGreen + oldBlue);
+                        blueAksen = oldBlue / (oldRed + oldGreen + oldBlue);
+                    }
+
+                    double equation1 = redAksen / greenAksen;
+                    double equation2 = (redAksen * blueAksen) / ((redAksen + greenAksen + blueAksen) * (redAksen + greenAksen + blueAksen));
+                    double equation3 = (redAksen * greenAksen) / ((redAksen + greenAksen + blueAksen) * (redAksen + greenAksen + blueAksen));
+
                     max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
                     min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
 
                     color = Color.FromArgb(oldRed, oldGreen, oldBlue);
                     hue = color.GetHue();
-                    //hue = color.GetHue() * 360 / 255;
                     saturation = (max == 0) ? 0 : 1d - (1d * min / max);
                     value = max / 255d;
 
-                    if (0 <= hue && hue <= 50 && 0.23 <= saturation && saturation <= 0.68)
-                    //if (0 <= hue && hue <= 20 && 0.22 <= saturation && saturation <= 1)
-                    ////if (5 <= hue && hue <= 35)
-                    ////if (0 <= hue && hue <= 55 && 0 <= saturation && saturation <= 0.5 && value >= 0.1)
-                    ////if (0 <= hue && hue <= 55 && 0 <= saturation && saturation <= 0.5)
+                    double ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
+                    double cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
+                    double ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
+
+                    //if (0 <= hue && hue <= 50 && 0.23 <= saturation && saturation <= 0.68)
+                    if (100 < cebe && cebe < 150 && 150 < ceer && ceer < 200)
+                    //if (equation1 > 1.185 ||
+                    //    (((0 < hue && hue < 25) || (335 < hue && hue < 360)) && 0.2 < saturation && saturation < 0.6) ||
+                    //    (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173))
                     {
                         pixels[currentLine + x] = (byte)255;
                         pixels[currentLine + x + 1] = (byte)255;
@@ -289,11 +310,6 @@ namespace HandSlider
                         pixels[currentLine + x + 1] = (byte)0;
                         pixels[currentLine + x + 2] = (byte)0;
                     }
-
-                    // calculate new pixel value
-                    //pixels[currentLine + x] = (byte)oldBlue;
-                    //pixels[currentLine + x + 1] = (byte)oldGreen;
-                    //pixels[currentLine + x + 2] = (byte)oldRed;
                 }
             }
 
