@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F709B499-9957-4FC1-A23B-6CE4797D019C}</ProjectGuid>
+    <ProjectGuid>{7073F05C-1217-4A51-B21D-8B3B7A449E99}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>HandSlider</RootNamespace>
-    <AssemblyName>HandSlider</AssemblyName>
+    <RootNamespace>Thresholding</RootNamespace>
+    <AssemblyName>Thresholding</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -23,7 +23,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,7 +57,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,16 +67,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FormHandSlider.cs">
+    <Compile Include="FormThresholding.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormHandSlider.Designer.cs">
-      <DependentUpon>FormHandSlider.cs</DependentUpon>
+    <Compile Include="FormThresholding.Designer.cs">
+      <DependentUpon>FormThresholding.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FormHandSlider.resx">
-      <DependentUpon>FormHandSlider.cs</DependentUpon>
+    <Compile Include="TestThresholding.cs" />
+    <EmbeddedResource Include="FormThresholding.resx">
+      <DependentUpon>FormThresholding.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

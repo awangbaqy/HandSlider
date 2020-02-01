@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Dataset
+namespace Thresholding
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace Dataset
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormDataset());
+            Application.Run(new FormThresholding());
         }
     }
 }

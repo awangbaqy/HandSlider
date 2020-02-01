@@ -1,6 +1,6 @@
 ﻿namespace HandSlider
 {
-    partial class Form1
+    partial class FormHandSlider
     {
         /// <summary>
         /// Required designer variable.

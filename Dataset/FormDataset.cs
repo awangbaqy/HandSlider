@@ -12,9 +12,9 @@ using System.Windows.Forms;
 
 namespace Dataset
 {
-    public partial class Form1 : Form
+    public partial class FormDataset : Form
     {
-        public Form1()
+        public FormDataset()
         {
             InitializeComponent();
         }

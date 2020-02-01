@@ -1,6 +1,6 @@
 ﻿namespace Dataset
 {
-    partial class Form1
+    partial class FormDataset
     {
         /// <summary>
         /// Required designer variable.

@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace HandSlider
 {
-    public partial class Form1 : Form
+    public partial class FormHandSlider : Form
     {
         Bitmap bit, bit2, bit3, destImage = new Bitmap(320, 240);
         BlobCounter blobCounter = new BlobCounter();
@@ -36,7 +36,7 @@ namespace HandSlider
         double hue, saturation, value, ylum, cb, cr;
         int i, j, max, min;
         
-        public Form1()
+        public FormHandSlider()
         {
             InitializeComponent();
             //pictureBox3.Image = pictureBox2.Image;
