@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -16,203 +17,190 @@ namespace Thresholding
 {
     public partial class FormThresholding : Form
     {
-        Bitmap bit, bit2, bit3, destImage = new Bitmap(320, 240);
-        FilterInfoCollection fic;
-        Graphics graphics, g;
+        Bitmap bitmap, bitmap2, destitationBitmap = new Bitmap(196, 144);
+        FilterInfoCollection filterInfoCollection;
+        Graphics graphics;
+        ImageAttributes imageAttributes;
+        Rectangle convertRectangle, destinationRectangle;
+        VideoCaptureDevice videoCaptureDevice;
+
+        GammaCorrection gammaCorrection = new GammaCorrection();
         GrayWorld grayWorld = new GrayWorld();
-        ImageAttributes wrapMode;
-        Rectangle destRect = new Rectangle(0, 0, 320, 240);
-        TestThresholding tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10, tt11, tt12;
-        VideoCaptureDevice vcd;
+        TestThresholding tt1, tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10, tt11;
 
         public FormThresholding()
         {
             InitializeComponent();
-            tt2 = tt3 = tt4 = tt5 = tt6 = tt7 = tt8 = tt9 = tt10 = tt11 = tt12 = new TestThresholding();
+            convertRectangle = destinationRectangle = new Rectangle(0, 0, 196, 144);
+            tt1 = tt2 = tt3 = tt4 = tt5 = tt6 = tt7 = tt8 = tt9 = tt10 = tt11 = new TestThresholding();
         }
 
         private void FormThresholding_Load(object sender, EventArgs e)
         {
-            fic = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            vcd = new VideoCaptureDevice(fic[0].MonikerString);
-            vcd.NewFrame += new NewFrameEventHandler(newFrame);
-            vcd.Start();
+            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[0].MonikerString);
+            videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
+            videoCaptureDevice.Start();
         }
 
         void newFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            bit = resize(eventArgs.Frame);
+            bitmap = resize(eventArgs.Frame);
 
-            lock (pictureBox1)
+            lock (pictureBox0)
             {
-                pictureBox1.Image = bit.Clone() as Bitmap;
+                pictureBox0.Image = bitmap.Clone() as Bitmap;
             }
-
-            /// R G B ///
-
-            //lock (pictureBox2)
-            //{
-            //    pictureBox2.Image = tt2.threshold_rgb(bit.Clone() as Bitmap, 1);
-            //}
-
-            //lock (pictureBox3)
-            //{
-            //    pictureBox3.Image = tt3.threshold_rgb(bit.Clone() as Bitmap, 2);
-            //}
-
-            //lock (pictureBox4)
-            //{
-            //    pictureBox4.Image = tt4.threshold_rgb(bit.Clone() as Bitmap, 3);
-            //}
-
-            //lock (pictureBox5)
-            //{
-            //    pictureBox5.Image = tt5.threshold_rgb(bit.Clone() as Bitmap, 4);
-            //}
-
-            //lock (pictureBox6)
-            //{
-            //    pictureBox6.Image = tt6.threshold_rgb(bit.Clone() as Bitmap, 5);
-            //}
-
-            /// H S V ///
-
-            //lock (pictureBox2)
-            //{
-            //    pictureBox2.Image = tt2.threshold_hsv(bit.Clone() as Bitmap, 1);
-            //}
-
-            //lock (pictureBox3)
-            //{
-            //    pictureBox3.Image = tt3.threshold_hsv(bit.Clone() as Bitmap, 2);
-            //}
-
-            //lock (pictureBox4)
-            //{
-            //    pictureBox4.Image = tt4.threshold_hsv(bit.Clone() as Bitmap, 3);
-            //}
-
-            //lock (pictureBox5)
-            //{
-            //    bit2 = grayWorld.Apply(bit.Clone() as Bitmap);
-            //    pictureBox5.Image = tt5.threshold_hsv(bit2.Clone() as Bitmap, 4);
-            //}
-
-            //lock (pictureBox6)
-            //{
-            //    pictureBox6.Image = tt6.threshold_hsv(bit.Clone() as Bitmap, 5);
-            //}
-
-            //lock (pictureBox7)
-            //{
-            //    pictureBox7.Image = tt7.threshold_hsv(bit.Clone() as Bitmap, 6);
-            //}
-
-            /// Y Cb Cr ///
-
-            //lock (pictureBox2)
-            //{
-            //    pictureBox2.Image = tt2.threshold_ybr(bit.Clone() as Bitmap, 1);
-            //}
-
-            //lock (pictureBox3)
-            //{
-            //    pictureBox3.Image = tt3.threshold_ybr(bit.Clone() as Bitmap, 2);
-            //}
-
-            //lock (pictureBox4)
-            //{
-            //    pictureBox4.Image = tt4.threshold_ybr(bit.Clone() as Bitmap, 3);
-            //}
-
-            //lock (pictureBox5)
-            //{
-            //    pictureBox5.Image = tt5.threshold_ybr(bit.Clone() as Bitmap, 4);
-            //}
-
-            //lock (pictureBox6)
-            //{
-            //    pictureBox6.Image = tt6.threshold_ybr(bit.Clone() as Bitmap, 5);
-            //}
-
-            //lock (pictureBox7)
-            //{
-            //    pictureBox7.Image = tt7.threshold_ybr(bit.Clone() as Bitmap, 6);
-            //}
-
-            //lock (pictureBox8)
-            //{
-            //    pictureBox8.Image = tt8.threshold_ybr(bit.Clone() as Bitmap, 7);
-            //}
-
-            //lock (pictureBox9)
-            //{
-            //    pictureBox9.Image = tt9.threshold_ybr(bit.Clone() as Bitmap, 8);
-            //}
-
-            //lock (pictureBox10)
-            //{
-            //    pictureBox10.Image = tt10.threshold_ybr(bit.Clone() as Bitmap, 9);
-            //}
-
-            //lock (pictureBox11)
-            //{
-            //    pictureBox11.Image = tt11.threshold_ybr(bit.Clone() as Bitmap, 10);
-            //}
-
-            //lock (pictureBox12)
-            //{
-            //    pictureBox12.Image = tt12.threshold_ybr(bit.Clone() as Bitmap, 11);
-            //}
-
-            /// F I N A L ///
-
-            lock (pictureBox2)
+            
+            if (radioButton_RGB.Checked)
             {
-                pictureBox2.Image = tt2.threshold_final(bit.Clone() as Bitmap, 1);
+                lock (pictureBox1)
+                {
+                    bitmap2 = gammaCorrection.Apply(bitmap.Clone(convertRectangle, PixelFormat.Format24bppRgb) as Bitmap);
+                    bitmap2 = grayWorld.Apply(bitmap2);
+                    pictureBox1.Image = tt1.threshold_rgb(bitmap2.Clone() as Bitmap, 1);
+                }
+                
+                lock (pictureBox2)
+                {
+                    pictureBox2.Image = tt2.threshold_rgb(bitmap.Clone() as Bitmap, 2);
+                }
+
+                lock (pictureBox3)
+                {
+                    pictureBox3.Image = tt3.threshold_rgb(bitmap.Clone() as Bitmap, 3);
+                }
+
+                pictureBox4.Image = null;
+                pictureBox5.Image = null;
+                pictureBox6.Image = null;
+                pictureBox7.Image = null;
+                pictureBox8.Image = null;
+                pictureBox9.Image = null;
+                pictureBox10.Image = null;
             }
-
-            lock (pictureBox3)
+            else if (radioButton_HSV.Checked)
             {
-                pictureBox3.Image = tt3.threshold_final(bit.Clone() as Bitmap, 2);
+                lock (pictureBox1)
+                {
+                    pictureBox1.Image = tt1.threshold_hsv(bitmap.Clone() as Bitmap, 1);
+                }
+
+                lock (pictureBox2)
+                {
+                    pictureBox2.Image = tt2.threshold_hsv(bitmap.Clone() as Bitmap, 2);
+                }
+
+                lock (pictureBox3)
+                {
+                    pictureBox3.Image = tt3.threshold_hsv(bitmap.Clone() as Bitmap, 3);
+                }
+
+                pictureBox4.Image = null;
+                pictureBox5.Image = null;
+                pictureBox6.Image = null;
+                pictureBox7.Image = null;
+                pictureBox8.Image = null;
+                pictureBox9.Image = null;
+                pictureBox10.Image = null;
             }
-
-            lock (pictureBox4)
+            else if (radioButton_YCbCr.Checked)
             {
-                pictureBox4.Image = tt4.threshold_final(bit.Clone() as Bitmap, 3);
+                lock (pictureBox1)
+                {
+                    pictureBox1.Image = tt1.threshold_ycbcr(bitmap.Clone() as Bitmap, 1);
+                }
+
+                lock (pictureBox2)
+                {
+                    pictureBox2.Image = tt2.threshold_ycbcr(bitmap.Clone() as Bitmap, 2);
+                }
+
+                lock (pictureBox3)
+                {
+                    pictureBox3.Image = tt3.threshold_ycbcr(bitmap.Clone() as Bitmap, 3);
+                }
+
+                lock (pictureBox4)
+                {
+                    pictureBox4.Image = tt4.threshold_ycbcr(bitmap.Clone() as Bitmap, 4);
+                }
+
+                lock (pictureBox5)
+                {
+                    pictureBox5.Image = tt5.threshold_ycbcr(bitmap.Clone() as Bitmap, 5);
+                }
+
+                lock (pictureBox6)
+                {
+                    pictureBox6.Image = tt6.threshold_ycbcr(bitmap.Clone() as Bitmap, 6);
+                }
+
+                lock (pictureBox7)
+                {
+                    pictureBox7.Image = tt7.threshold_ycbcr(bitmap.Clone() as Bitmap, 7);
+                }
+
+                lock (pictureBox8)
+                {
+                    pictureBox8.Image = tt8.threshold_ycbcr(bitmap.Clone() as Bitmap, 8);
+                }
+
+                lock (pictureBox9)
+                {
+                    pictureBox9.Image = tt9.threshold_ycbcr(bitmap.Clone() as Bitmap, 9);
+                }
+
+                lock (pictureBox10)
+                {
+                    pictureBox10.Image = tt10.threshold_ycbcr(bitmap.Clone() as Bitmap, 10);
+                }
             }
-
-            lock (pictureBox5)
+            else if (radioButton_Combined.Checked)
             {
-                pictureBox5.Image = tt5.threshold_final(bit.Clone() as Bitmap, 4);
+                lock (pictureBox1)
+                {
+                    pictureBox1.Image = tt1.threshold_combined(bitmap.Clone() as Bitmap, 1);
+                }
+
+                lock (pictureBox2)
+                {
+                    pictureBox2.Image = tt2.threshold_combined(bitmap.Clone() as Bitmap, 2);
+                }
+
+                lock (pictureBox3)
+                {
+                    pictureBox3.Image = tt3.threshold_combined(bitmap.Clone() as Bitmap, 3);
+                }
+
+                pictureBox4.Image = null;
+                pictureBox5.Image = null;
+                pictureBox6.Image = null;
+                pictureBox7.Image = null;
+                pictureBox8.Image = null;
+                pictureBox9.Image = null;
+                pictureBox10.Image = null;
             }
-
-            lock (pictureBox6)
+            else if (radioButton_Final.Checked)
             {
-                pictureBox6.Image = tt6.threshold_final(bit.Clone() as Bitmap, 5);
-            }
-
-            lock (pictureBox7)
-            {
-                pictureBox7.Image = tt7.threshold_final(bit.Clone() as Bitmap, 6);
-            }
-
-            lock (pictureBox8)
-            {
-                pictureBox8.Image = tt8.threshold_final(bit.Clone() as Bitmap, 7);
-            }
-
-            lock (pictureBox9)
-            {
-                pictureBox9.Image = tt9.threshold_final(bit.Clone() as Bitmap, 8);
+                pictureBox1.Image = null;
+                pictureBox2.Image = null;
+                pictureBox3.Image = null;
+                pictureBox4.Image = null;
+                pictureBox5.Image = null;
+                pictureBox6.Image = null;
+                pictureBox7.Image = null;
+                pictureBox8.Image = null;
+                pictureBox9.Image = null;
+                pictureBox10.Image = null;
             }
         }
 
-        private Bitmap resize(Bitmap bit)
+        private Bitmap resize(Bitmap bitmap)
         {
-            destImage.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
+            destitationBitmap.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
 
-            using (graphics = Graphics.FromImage(destImage))
+            using (graphics = Graphics.FromImage(destitationBitmap))
             {
                 graphics.CompositingMode = CompositingMode.SourceCopy;
                 graphics.CompositingQuality = CompositingQuality.HighQuality;
@@ -220,21 +208,21 @@ namespace Thresholding
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                using (wrapMode = new ImageAttributes())
+                using (imageAttributes = new ImageAttributes())
                 {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(bit, destRect, 0, 0, bit.Width, bit.Height, GraphicsUnit.Pixel, wrapMode);
+                    imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(bitmap, destinationRectangle, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, imageAttributes);
                 }
             }
 
-            return destImage;
+            return destitationBitmap;
         }
 
         private void FormThresholding_FormClosing(object sender, FormClosingEventArgs e)
         {
-            vcd.NewFrame -= new NewFrameEventHandler(newFrame);
-            vcd.Stop();
-            vcd.SignalToStop();
+            videoCaptureDevice.NewFrame -= new NewFrameEventHandler(newFrame);
+            videoCaptureDevice.Stop();
+            videoCaptureDevice.SignalToStop();
         }
     }
 }
