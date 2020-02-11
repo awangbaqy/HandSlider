@@ -17,148 +17,228 @@ namespace Morphologing
 {
     public partial class FormMorphologing : Form
     {
-        Bitmap bit, destImage = new Bitmap(480, 360);
+        Bitmap bitmap, destinationBitmap;
         BitmapData bitmapData;
-        FilterInfoCollection fic;
-        Graphics graphics, g;
-        ImageAttributes wrapMode;
-        Rectangle destRect = new Rectangle(0, 0, 480, 360);
-        VideoCaptureDevice vcd;
+        FilterInfoCollection filterInfoCollection;
+        Graphics graphics;
+        ImageAttributes imageAttributes;
+        Rectangle destinationRectangle;
+        VideoCaptureDevice videoCaptureDevice;
 
-        AdaptiveSmoothing adaptiveSmoothing = new AdaptiveSmoothing();
-        BilateralSmoothing bilateralSmoothing = new BilateralSmoothing();
-        Closing closing = new Closing();
-        ConservativeSmoothing conservativeSmoothing = new ConservativeSmoothing();
-        Dilation dilation = new Dilation();
-        Erosion erosion = new Erosion();
-        Mean mean = new Mean();
-        Median median = new Median();
-        Opening opening = new Opening();
-        TopHat topHat = new TopHat();
+        AdaptiveSmoothing adaptiveSmoothing;
+        BilateralSmoothing bilateralSmoothing;
+        Closing closing, closingFull5x5, closingRadius10;
+        ConservativeSmoothing conservativeSmoothing;
+        Convolution convolution;
+        BinaryDilation3x3 binaryDilation3x3;
+        BinaryErosion3x3 binaryErosion3x3;
+        Dilation dilation;
+        Erosion erosion;
+        FillHoles fillHoles;
+        Mean mean;
+        Median median;
+        Opening opening;
+        Subtract subtract;
+        TopHat topHat;
         
-        double ye, cebe, ceer;
-
         byte[] pixels;
         int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
         int oldBlue, oldGreen, oldRed;
+        double ye, cebe, ceer;
+
+        int[,] kernelInt = {
+            {0,0,0,1,0,0,0},
+            {0,1,1,1,1,1,0},
+            {0,1,1,1,1,1,0},
+            {1,1,1,1,1,1,1},
+            {0,1,1,1,1,1,0},
+            {0,1,1,1,1,1,0},
+            {0,0,0,1,0,0,0}
+        };
+
+        short[,] kernelShort = {
+            {0,0,0,1,0,0,0},
+            {0,1,1,1,1,1,0},
+            {0,1,1,1,1,1,0},
+            {1,1,1,1,1,1,1},
+            {0,1,1,1,1,1,0},
+            {0,1,1,1,1,1,0},
+            {0,0,0,1,0,0,0}
+        };
+
+        short[,] kernelShortFull5x5 = {
+            {1,1,1,1,1},
+            {1,1,1,1,1},
+            {1,1,1,1,1},
+            {1,1,1,1,1},
+            {1,1,1,1,1},
+        };
+
+        short[,] kernelShortRadius10 = {
+            {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
+            {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
+            {0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0},
+            {0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0},
+            {0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0},
+            {0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0},
+            {0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0},
+            {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
+            {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
+        };
 
         public FormMorphologing()
         {
             InitializeComponent();
+
+            destinationBitmap = new Bitmap(480, 360);
+            destinationRectangle = new Rectangle(0, 0, 480, 360);
+
+            adaptiveSmoothing = new AdaptiveSmoothing();
+            bilateralSmoothing = new BilateralSmoothing();
+            binaryDilation3x3 = new BinaryDilation3x3();
+            binaryErosion3x3 = new BinaryErosion3x3();
+            closing = new Closing();
+            closingFull5x5 = new Closing(kernelShortFull5x5);
+            closingRadius10 = new Closing(kernelShortRadius10);
+            conservativeSmoothing = new ConservativeSmoothing();
+            convolution = new Convolution(kernelInt);
+            dilation = new Dilation(kernelShort);
+            erosion = new Erosion(kernelShort);
+
+            fillHoles = new FillHoles();
+            fillHoles.MaxHoleHeight = 20;
+            fillHoles.MaxHoleWidth = 20;
+            fillHoles.CoupledSizeFiltering = false;
+
+            mean = new Mean();
+            median = new Median();
+            opening = new Opening();
+            topHat = new TopHat();
         }
 
         private void FormMorphologing_Load(object sender, EventArgs e)
         {
-            fic = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            vcd = new VideoCaptureDevice(fic[0].MonikerString);
-            vcd.NewFrame += new NewFrameEventHandler(newFrame);
-            vcd.Start();
+            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[0].MonikerString);
+            videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
+            videoCaptureDevice.Start();
         }
 
         void newFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            bit = resize(eventArgs.Frame);
+            bitmap = resize(eventArgs.Frame);
 
             lock (pictureBox0)
             {
-                pictureBox0.Image = bit.Clone() as Bitmap;
+                pictureBox0.Image = bitmap.Clone() as Bitmap;
             }
 
-            bit = thresholding(bit);
-            bit = Grayscale.CommonAlgorithms.BT709.Apply(bit);
+            bitmap = thresholding(bitmap);
+            bitmap = Grayscale.CommonAlgorithms.BT709.Apply(bitmap);
 
             lock (pictureBox1)
             {
                 if (radioButton1.Checked)
                 {
-                    bit = conservativeSmoothing.Apply(dilation.Apply(erosion.Apply(bit)));
+                    bitmap = conservativeSmoothing.Apply(binaryDilation3x3.Apply(binaryErosion3x3.Apply(bitmap)));
                 }
                 else if (radioButton2.Checked)
                 {
-                    bit = topHat.Apply(bit);
+                    bitmap = topHat.Apply(bitmap);
                 }
                 else if (radioButton3.Checked)
                 {
-                    bit = closing.Apply(opening.Apply(erosion.Apply(dilation.Apply(bit))));
+                    bitmap = closing.Apply(opening.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap))));
                 }
                 else if (radioButton4.Checked)
                 {
-                    
+                    bitmap = closing.Apply(median.Apply(bitmap));
                 }
                 else if (radioButton5.Checked)
                 {
-                    
+                    bitmap = closing.Apply(opening.Apply(mean.Apply(bitmap)));
                 }
                 else if (radioButton6.Checked)
                 {
-                    
+                    bitmap = binaryDilation3x3.Apply(binaryErosion3x3.Apply(bitmap));
                 }
                 else if (radioButton7.Checked)
                 {
-                    
+                    // fill holes
+                    bitmap = fillHoles.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap)));
                 }
                 else if (radioButton8.Checked)
                 {
-
+                    // circular filter
+                    bitmap = convolution.Apply(opening.Apply(closing.Apply(bitmap)));
                 }
                 else if (radioButton9.Checked)
                 {
-
+                    // circular filter
+                    bitmap = erosion.Apply(dilation.Apply(bitmap));
                 }
                 else if (radioButton10.Checked)
                 {
-
+                    bitmap = binaryDilation3x3.Apply(median.Apply(bitmap));
                 }
                 else if (radioButton11.Checked)
                 {
-
+                    // circular filer radius 10
+                    bitmap = closingRadius10.Apply(opening.Apply(bitmap));
                 }
                 else if (radioButton12.Checked)
                 {
-
+                    bitmap = binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap));
                 }
                 else if (radioButton13.Checked)
                 {
-
+                    // fill holes
+                    bitmap = fillHoles.Apply(opening.Apply(median.Apply(bitmap)));
                 }
                 else if (radioButton14.Checked)
                 {
-
+                    // gradient = dilation - erosion
+                    subtract = new Subtract(binaryErosion3x3.Apply(bitmap));
+                    bitmap = subtract.Apply(binaryDilation3x3.Apply(bitmap));
                 }
                 else if (radioButton15.Checked)
                 {
-
+                    bitmap = closingFull5x5.Apply(bitmap);
                 }
                 else if (radioButton16.Checked)
                 {
-
+                    bitmap = opening.Apply(closing.Apply(bitmap));
                 }
                 else if (radioButton17.Checked)
                 {
-
+                    bitmap = opening.Apply(bitmap);
                 }
                 else if (radioButton18.Checked)
                 {
-
-                }
-                else if (radioButton19.Checked)
-                {
-
-                }
-                else if (radioButton20.Checked)
-                {
-
+                    bitmap = median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap)));
                 }
 
-                pictureBox1.Image = bit;
+                pictureBox1.Image = bitmap;
             }
         }
 
         private Bitmap resize(Bitmap bit)
         {
-            destImage.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
+            destinationBitmap.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
 
-            using (graphics = Graphics.FromImage(destImage))
+            using (graphics = Graphics.FromImage(destinationBitmap))
             {
                 graphics.CompositingMode = CompositingMode.SourceCopy;
                 graphics.CompositingQuality = CompositingQuality.HighQuality;
@@ -166,14 +246,14 @@ namespace Morphologing
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                using (wrapMode = new ImageAttributes())
+                using (imageAttributes = new ImageAttributes())
                 {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(bit, destRect, 0, 0, bit.Width, bit.Height, GraphicsUnit.Pixel, wrapMode);
+                    imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(bit, destinationRectangle, 0, 0, bit.Width, bit.Height, GraphicsUnit.Pixel, imageAttributes);
                 }
             }
 
-            return destImage;
+            return destinationBitmap;
         }
 
         private Bitmap thresholding(Bitmap bit)
@@ -224,9 +304,9 @@ namespace Morphologing
         
         private void FormMorphologing_FormClosing(object sender, FormClosingEventArgs e)
         {
-            vcd.NewFrame -= new NewFrameEventHandler(newFrame);
-            vcd.Stop();
-            vcd.SignalToStop();
+            videoCaptureDevice.NewFrame -= new NewFrameEventHandler(newFrame);
+            videoCaptureDevice.Stop();
+            videoCaptureDevice.SignalToStop();
         }
     }
 }

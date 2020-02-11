@@ -17,21 +17,26 @@ namespace Thresholding
 {
     public partial class FormThresholding : Form
     {
-        Bitmap bitmap, bitmap2, destitationBitmap = new Bitmap(196, 144);
+        Bitmap bitmap, bitmap2, destitationBitmap;
         FilterInfoCollection filterInfoCollection;
         Graphics graphics;
         ImageAttributes imageAttributes;
         Rectangle convertRectangle, destinationRectangle;
         VideoCaptureDevice videoCaptureDevice;
 
-        GammaCorrection gammaCorrection = new GammaCorrection();
-        GrayWorld grayWorld = new GrayWorld();
+        GammaCorrection gammaCorrection;
+        GrayWorld grayWorld;
         TestThresholding tt1, tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10, tt11;
 
         public FormThresholding()
         {
             InitializeComponent();
+
+            destitationBitmap = new Bitmap(196, 144);
             convertRectangle = destinationRectangle = new Rectangle(0, 0, 196, 144);
+
+            gammaCorrection = new GammaCorrection();
+            grayWorld = new GrayWorld();
             tt1 = tt2 = tt3 = tt4 = tt5 = tt6 = tt7 = tt8 = tt9 = tt10 = tt11 = new TestThresholding();
         }
 
