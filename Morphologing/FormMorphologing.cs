@@ -43,7 +43,8 @@ namespace Morphologing
         
         byte[] pixels;
         int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
-        int oldBlue, oldGreen, oldRed;
+        int oldBlue, oldGreen, oldRed, max, min;
+        double hue, saturation, value;
         double ye, cebe, ceer;
 
         int[,] kernelInt = {
@@ -277,11 +278,24 @@ namespace Morphologing
                     oldGreen = pixels[currentLine + x + 1];
                     oldRed = pixels[currentLine + x + 2];
 
+                    max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
+                    min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
+
+                    Color color = Color.FromArgb(oldRed, oldGreen, oldBlue);
+                    hue = color.GetHue();
+                    saturation = (max == 0) ? 0 : 1d - (1d * min / max);
+                    value = max / 255d;
+
                     ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
                     cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
                     ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
 
-                    if (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173)
+                    if ((
+                         (0 < (hue / 360) && (hue / 360) < 0.24) ||
+                         (0.74 < (hue / 360) && (hue / 360) < 1)
+                        ) &&
+                        0.16 < saturation && saturation < 0.79)
+                    //if (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173)
                     {
                         pixels[currentLine + x] = (byte)255;
                         pixels[currentLine + x + 1] = (byte)255;

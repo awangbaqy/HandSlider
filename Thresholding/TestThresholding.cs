@@ -365,7 +365,7 @@ namespace Thresholding
                          (
                           (oldGreen >= oldBlue && ((5 * oldRed) - (12 * oldGreen) + (7 * oldBlue)) >= 0) ||
                           (oldGreen < oldBlue || ((5 * oldRed) + (7 * oldGreen) - (12 * oldBlue)) >= 0)
-                         ) && //|| //AND or OR
+                         ) &&
                          (85 < cebe && cebe < 135 && 135 < ceer && ceer < 180)
                         )
                        )
@@ -451,6 +451,65 @@ namespace Thresholding
                     ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
                     cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
                     ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
+
+                    if (
+                        method == 1 &&
+                        oldRed > 95 && oldGreen > 40 && oldBlue > 20 &&
+                        (Math.Max(oldRed, Math.Max(oldGreen, oldBlue)) - Math.Min(oldRed, Math.Min(oldGreen, oldBlue))) > 15 &&
+                        Math.Abs(oldRed - oldGreen) > 15 && oldRed > oldGreen && oldRed > oldBlue
+                       )
+                    {
+                        skin = true;
+                    }
+
+                    else if (
+                        method == 2 &&
+                        (
+                         (0 < (hue / 360) && (hue / 360) < 0.24) ||
+                         (0.74 < (hue / 360) && (hue / 360) < 1)
+                        ) &&
+                        0.16 < saturation && saturation < 0.79
+                       )
+                    {
+                        skin = true;
+                    }
+
+                    else if (method == 3 && 78 <= cebe && cebe <= 126 && 134 <= ceer && ceer <= 172)
+                    {
+                        skin = true;
+                    }
+
+                    else if (method == 4)
+                    {
+                        ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
+                        cebe = 128 + (-0.168636 * oldRed) + (0.232932 * oldGreen) + (-0.064296 * oldBlue);
+                        ceer = 128 + (0.499813 * oldRed) + (-0.418531 * oldGreen) + (-0.081282 * oldBlue);
+
+                        if (102 < cebe && cebe < 135 && 135 < ceer && ceer < 178)
+                        {
+                            skin = true;
+                        }
+                    }
+
+                    else if (method == 5 && 100 < cebe && cebe < 150 && 150 < ceer && ceer < 200)
+                    {
+                        skin = true;
+                    }
+
+                    else if (
+                        method == 6 &&
+                        (
+                         (oldRed > oldGreen && oldRed > oldBlue) &&
+                         (
+                          (oldGreen >= oldBlue && ((5 * oldRed) - (12 * oldGreen) + (7 * oldBlue)) >= 0) ||
+                          (oldGreen < oldBlue || ((5 * oldRed) + (7 * oldGreen) - (12 * oldBlue)) >= 0)
+                         ) &&
+                         (85 < cebe && cebe < 135 && 135 < ceer && ceer < 180)
+                        )
+                       )
+                    {
+                        skin = true;
+                    }
 
                     if (skin == true)
                     {

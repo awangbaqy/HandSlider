@@ -55,6 +55,8 @@
             this.radioButton_YCbCr = new System.Windows.Forms.RadioButton();
             this.radioButton_Combined = new System.Windows.Forms.RadioButton();
             this.radioButton_Final = new System.Windows.Forms.RadioButton();
+            this.lblNama = new System.Windows.Forms.Label();
+            this.cbPause = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox0)).BeginInit();
@@ -118,7 +120,7 @@
             // pictureBox5
             // 
             this.pictureBox5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox5.Location = new System.Drawing.Point(811, 3);
+            this.pictureBox5.Location = new System.Drawing.Point(3, 197);
             this.pictureBox5.Name = "pictureBox5";
             this.pictureBox5.Size = new System.Drawing.Size(196, 144);
             this.pictureBox5.TabIndex = 4;
@@ -127,7 +129,7 @@
             // pictureBox6
             // 
             this.pictureBox6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox6.Location = new System.Drawing.Point(3, 197);
+            this.pictureBox6.Location = new System.Drawing.Point(205, 197);
             this.pictureBox6.Name = "pictureBox6";
             this.pictureBox6.Size = new System.Drawing.Size(196, 144);
             this.pictureBox6.TabIndex = 9;
@@ -136,7 +138,7 @@
             // pictureBox7
             // 
             this.pictureBox7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox7.Location = new System.Drawing.Point(205, 197);
+            this.pictureBox7.Location = new System.Drawing.Point(407, 197);
             this.pictureBox7.Name = "pictureBox7";
             this.pictureBox7.Size = new System.Drawing.Size(196, 144);
             this.pictureBox7.TabIndex = 8;
@@ -145,7 +147,7 @@
             // pictureBox8
             // 
             this.pictureBox8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox8.Location = new System.Drawing.Point(407, 197);
+            this.pictureBox8.Location = new System.Drawing.Point(609, 197);
             this.pictureBox8.Name = "pictureBox8";
             this.pictureBox8.Size = new System.Drawing.Size(196, 144);
             this.pictureBox8.TabIndex = 7;
@@ -154,7 +156,7 @@
             // pictureBox9
             // 
             this.pictureBox9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox9.Location = new System.Drawing.Point(609, 197);
+            this.pictureBox9.Location = new System.Drawing.Point(205, 391);
             this.pictureBox9.Name = "pictureBox9";
             this.pictureBox9.Size = new System.Drawing.Size(196, 144);
             this.pictureBox9.TabIndex = 12;
@@ -163,7 +165,7 @@
             // pictureBox10
             // 
             this.pictureBox10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox10.Location = new System.Drawing.Point(811, 197);
+            this.pictureBox10.Location = new System.Drawing.Point(407, 391);
             this.pictureBox10.Name = "pictureBox10";
             this.pictureBox10.Size = new System.Drawing.Size(196, 144);
             this.pictureBox10.TabIndex = 11;
@@ -195,13 +197,13 @@
             this.panel1.Controls.Add(this.pictureBox5);
             this.panel1.Location = new System.Drawing.Point(345, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(850, 400);
+            this.panel1.Size = new System.Drawing.Size(818, 566);
             this.panel1.TabIndex = 13;
             // 
             // label10
             // 
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(811, 344);
+            this.label10.Location = new System.Drawing.Point(407, 538);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(196, 22);
             this.label10.TabIndex = 19;
@@ -211,7 +213,7 @@
             // label11
             // 
             this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label11.Location = new System.Drawing.Point(609, 344);
+            this.label11.Location = new System.Drawing.Point(205, 538);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(196, 22);
             this.label11.TabIndex = 18;
@@ -221,7 +223,7 @@
             // label5
             // 
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(407, 344);
+            this.label5.Location = new System.Drawing.Point(609, 344);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(196, 22);
             this.label5.TabIndex = 17;
@@ -231,7 +233,7 @@
             // label6
             // 
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(205, 344);
+            this.label6.Location = new System.Drawing.Point(407, 344);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(196, 22);
             this.label6.TabIndex = 16;
@@ -241,7 +243,7 @@
             // label7
             // 
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(3, 344);
+            this.label7.Location = new System.Drawing.Point(205, 344);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(196, 22);
             this.label7.TabIndex = 15;
@@ -251,7 +253,7 @@
             // label8
             // 
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(811, 150);
+            this.label8.Location = new System.Drawing.Point(3, 344);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(196, 22);
             this.label8.TabIndex = 14;
@@ -355,11 +357,32 @@
             this.radioButton_Final.Text = "Final";
             this.radioButton_Final.UseVisualStyleBackColor = true;
             // 
+            // lblNama
+            // 
+            this.lblNama.AutoSize = true;
+            this.lblNama.Location = new System.Drawing.Point(122, 337);
+            this.lblNama.Name = "lblNama";
+            this.lblNama.Size = new System.Drawing.Size(35, 13);
+            this.lblNama.TabIndex = 19;
+            this.lblNama.Text = "label9";
+            // 
+            // cbPause
+            // 
+            this.cbPause.AutoSize = true;
+            this.cbPause.Location = new System.Drawing.Point(12, 337);
+            this.cbPause.Name = "cbPause";
+            this.cbPause.Size = new System.Drawing.Size(55, 17);
+            this.cbPause.TabIndex = 20;
+            this.cbPause.Text = "pause";
+            this.cbPause.UseVisualStyleBackColor = true;
+            // 
             // FormThresholding
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1209, 421);
+            this.ClientSize = new System.Drawing.Size(1172, 587);
+            this.Controls.Add(this.cbPause);
+            this.Controls.Add(this.lblNama);
             this.Controls.Add(this.radioButton_Final);
             this.Controls.Add(this.radioButton_Combined);
             this.Controls.Add(this.radioButton_YCbCr);
@@ -417,6 +440,8 @@
         private System.Windows.Forms.RadioButton radioButton_YCbCr;
         private System.Windows.Forms.RadioButton radioButton_Combined;
         private System.Windows.Forms.RadioButton radioButton_Final;
+        private System.Windows.Forms.Label lblNama;
+        private System.Windows.Forms.CheckBox cbPause;
     }
 }
 
