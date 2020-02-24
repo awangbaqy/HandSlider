@@ -1,25 +1,111 @@
-﻿using System;
+﻿using Accord.Imaging;
+using Accord.Imaging.Filters;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Dataset
 {
     public partial class FormDataset : Form
     {
+        Bitmap resultThresholding, resultMorphologing, destinationBitmap, resultResize;
+        BitmapData bitmapData;
+        Graphics graphics;
+        ImageAttributes imageAttributes;
+        Rectangle destinationRectangle;
+
+        BlobCounter blobCounter;
+        Blob[] blobs;
+        Closing closingRadius10;
+        Opening opening;
+
+        Timer moveTimer = new Timer();
+        int counter = 0;
+
+        byte[] pixels;
+        int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
+        int oldBlue, oldGreen, oldRed, max, min;
+        double hue, saturation, value;
+        double ye, cebe, ceer;
+
+        short[,] kernelShortRadius10 = {
+            {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
+            {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
+            {0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0},
+            {0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0},
+            {0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+            {0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0},
+            {0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0},
+            {0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0},
+            {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
+            {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
+        };
+
         public FormDataset()
         {
             InitializeComponent();
+
+            blobCounter = new BlobCounter();
+            closingRadius10 = new Closing(kernelShortRadius10);
+            opening = new Opening();
+            
+            destinationBitmap = new Bitmap(15, 15);
+            destinationRectangle = new Rectangle(0, 0, 15, 15);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void FormDataset_Load(object sender, EventArgs e)
+        {
+            moveTimer.Interval = 10000;
+            moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            moveTimer.Start();
+        }
+
+        private void moveTimer_Tick(object sender, System.EventArgs e)
+        {
+            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
+            System.Drawing.Image image = System.Drawing.Image.FromFile(images[counter]);
+
+            pictureBox1.Image = image;
+            resultThresholding = thresholding((Bitmap)image);
+            pictureBox2.Image = resultThresholding;
+            resultMorphologing = morphologing(resultThresholding);
+            pictureBox3.Image = resultMorphologing;
+            blobCounter.ProcessImage(resultMorphologing);
+            resultMorphologing = new ExtractBiggestBlob().Apply(resultMorphologing);
+            pictureBox4.Image = resultMorphologing;
+            resultResize = resizing(resultMorphologing);
+            pictureBox5.Image = resultResize;
+            labelHX.Text = "H / X : " + lineHX(resultResize);
+            labelVY.Text = "V / Y : " + lineVY(resultResize);
+            
+            if (counter < images.Count() - 1)
+            {
+                counter = counter + 1;
+            }
+            else
+            {
+                counter = 0;
+            }
+        }
+
+        private void inputToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog folderDlg = new FolderBrowserDialog
             {
@@ -30,118 +116,146 @@ namespace Dataset
             {
                 Environment.SpecialFolder root = folderDlg.RootFolder;
 
-                //toolStripStatusLabelDirectory.Text = Path.GetFullPath(folderDlg.SelectedPath);
+                //List<Image> pictureArray = new List<Image>();
+                //foreach (string item in Directory.GetFiles(folderDlg.SelectedPath, "*.jpg", SearchOption.AllDirectories))
+                //{
+                //    Image _image = Image.FromFile(item);
 
-                List<Image> pictureArray = new List<Image>();
-                int iente = 0;
-                foreach (string item in Directory.GetFiles(folderDlg.SelectedPath, "*.jpg", SearchOption.AllDirectories))
-                {
-                    iente += 1;
-                    
-                    Image _image = Image.FromFile(item);
-                    string nama = Path.GetFileNameWithoutExtension(item);
-
-                    Bitmap bit = threshold_lockbit_hsv((Bitmap)_image);
-
-                    bit.Save(folderDlg.SelectedPath+"//biner_" + nama + ".jpg");
-
-                    //pictureArray.Add(_image);
-
-                    //if (iente == 1)
-                    //{
-                    //    break;
-                    //}
-                }
-
-                //pbOutput.Image = keAverageDenoising(pictureArray);
+                //    resultThresholding = thresholding((Bitmap)_image);
+                //    resultMorphologing = morphologing(resultThresholding);
+                //}
             }
         }
 
-        private Bitmap threshold_lockbit_hsv(Bitmap bit)
+        private Bitmap thresholding(Bitmap bit)
         {
-            BitmapData bitmapData = bit.LockBits(new Rectangle(0, 0, bit.Width, bit.Height), ImageLockMode.ReadWrite, bit.PixelFormat);
+            bitmapData = bit.LockBits(new Rectangle(0, 0, bit.Width, bit.Height), ImageLockMode.ReadWrite, bit.PixelFormat);
 
-            int bytesPerPixel = Bitmap.GetPixelFormatSize(bit.PixelFormat) / 8;
-            int byteCount = bitmapData.Stride * bit.Height;
-            byte[] pixels = new byte[byteCount];
+            bytesPerPixel = Bitmap.GetPixelFormatSize(bit.PixelFormat) / 8;
+            byteCount = bitmapData.Stride * bit.Height;
+            pixels = new byte[byteCount];
             IntPtr ptrFirstPixel = bitmapData.Scan0;
             Marshal.Copy(ptrFirstPixel, pixels, 0, pixels.Length);
-            int heightInPixels = bitmapData.Height;
-            int widthInBytes = bitmapData.Width * bytesPerPixel;
+            heightInPixels = bitmapData.Height;
+            widthInBytes = bitmapData.Width * bytesPerPixel;
 
-            for (int y = 0; y < heightInPixels; y++)
+            for (y = 0; y < heightInPixels; y++)
             {
-                int currentLine = y * bitmapData.Stride;
-                for (int x = 0; x < widthInBytes; x = x + bytesPerPixel)
+                currentLine = y * bitmapData.Stride;
+                for (x = 0; x < widthInBytes; x = x + bytesPerPixel)
                 {
-                    int oldBlue = pixels[currentLine + x];
-                    int oldGreen = pixels[currentLine + x + 1];
-                    int oldRed = pixels[currentLine + x + 2];
+                    oldBlue = pixels[currentLine + x];
+                    oldGreen = pixels[currentLine + x + 1];
+                    oldRed = pixels[currentLine + x + 2];
 
-                    double redAksen = 1/3;
-                    double greenAksen = 1/3;
-                    double blueAksen = 1/3;
-
-                    if (oldBlue != 0 || oldGreen != 0 || oldRed != 0)
-                    {
-                        redAksen = oldRed / (oldRed + oldGreen + oldBlue);
-                        greenAksen = oldGreen / (oldRed + oldGreen + oldBlue);
-                        blueAksen = oldBlue / (oldRed + oldGreen + oldBlue);
-                    }
-
-                    double equation1 = redAksen / greenAksen;
-                    double equation2 = (redAksen * blueAksen) / ((redAksen + greenAksen + blueAksen) * (redAksen + greenAksen + blueAksen));
-                    double equation3 = (redAksen * greenAksen) / ((redAksen + greenAksen + blueAksen) * (redAksen + greenAksen + blueAksen));
-
-                    //Console.WriteLine("red:" + oldRed + " green:" + oldGreen + " blue:" + oldBlue);
-
-                    int max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
-                    int min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
+                    max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
+                    min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
 
                     Color color = Color.FromArgb(oldRed, oldGreen, oldBlue);
-                    double hue = color.GetHue();
-                    double saturation = (max == 0) ? 0 : 1d - (1d * min / max);
-                    double value = max / 255d;
+                    hue = color.GetHue();
+                    saturation = (max == 0) ? 0 : 1d - (1d * min / max);
+                    value = max / 255d;
 
-                    //Console.WriteLine("h:" + hue + " s:" + saturation + " v:" + value);
+                    //ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
+                    //cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
+                    //ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
 
-                    double ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
-                    double cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
-                    double ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
-
-                    //Console.WriteLine("y:" + ye + " cb:" + cebe + " cr:" + ceer);
-
-                    //double gray = (oldBlue + oldGreen + oldRed) / 3;
-
-                    //if (0 <= hue && hue <= 50 && 0.23 <= saturation && saturation <= 0.68)
-                    //if (100 < cebe && cebe < 150 && 150 < ceer && ceer < 200)
-                    if (equation1 > 1.185 ||
-                        (((0 < hue && hue < 25) || (335 < hue && hue < 360)) && 0.2 < saturation && saturation < 0.6) ||
-                        (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173))
+                    if ((
+                         (0 < (hue / 360) && (hue / 360) < 0.24) ||
+                         (0.74 < (hue / 360) && (hue / 360) < 1)
+                        ) &&
+                        0.16 < saturation && saturation < 0.79)
+                    //if (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173)
                     {
-                        pixels[currentLine + x] = (byte)255;
-                        pixels[currentLine + x + 1] = (byte)255;
-                        pixels[currentLine + x + 2] = (byte)255;
+                        pixels[currentLine + x] = 255;
+                        pixels[currentLine + x + 1] = 255;
+                        pixels[currentLine + x + 2] = 255;
                     }
                     else
                     {
-                        pixels[currentLine + x] = (byte)0;
-                        pixels[currentLine + x + 1] = (byte)0;
-                        pixels[currentLine + x + 2] = (byte)0;
+                        pixels[currentLine + x] = 0;
+                        pixels[currentLine + x + 1] = 0;
+                        pixels[currentLine + x + 2] = 0;
                     }
-
-                    //calculate new pixel value
-                    //pixels[currentLine + x] = (byte)oldBlue;
-                    //pixels[currentLine + x + 1] = (byte)oldGreen;
-                    //pixels[currentLine + x + 2] = (byte)oldRed;
                 }
             }
 
-            // copy modified bytes back
             Marshal.Copy(pixels, 0, ptrFirstPixel, pixels.Length);
             bit.UnlockBits(bitmapData);
 
             return bit;
+        }
+
+        private Bitmap morphologing(Bitmap bit)
+        {
+            // circular filer radius 10
+            return closingRadius10.Apply(opening.Apply(bit));
+        }
+
+        private Bitmap resizing(Bitmap bit)
+        {
+            destinationBitmap.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
+
+            using (graphics = Graphics.FromImage(destinationBitmap))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (imageAttributes = new ImageAttributes())
+                {
+                    imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(bit, destinationRectangle, 0, 0, bit.Width, bit.Height, GraphicsUnit.Pixel, imageAttributes);
+                }
+            }
+
+            return destinationBitmap;
+        }
+
+        private string lineHX(Bitmap bit)
+        {
+            string str = "";
+
+            for (int i = 0; i < bit.Width; i++)
+            {
+                int count = 0;
+                for (int j = 0; j < bit.Height; j++)
+                {
+                    Color c = bit.GetPixel(i, j);
+
+                    if ((c.R + c.G + c.G) / 3 > 127)
+                    {
+                        count += 1;
+                    }
+                }
+                str += count.ToString() + ",";
+            }
+
+            return str;
+        }
+
+        private string lineVY(Bitmap bit)
+        {
+            string str = "";
+
+            for (int i = 0; i < bit.Width; i++)
+            {
+                int count = 0;
+                for (int j = 0; j < bit.Height; j++)
+                {
+                    Color c = bit.GetPixel(j, i);
+
+                    if ((c.R + c.G + c.G) / 3 > 127)
+                    {
+                        count += 1;
+                    }
+                }
+                str += count.ToString() + ",";
+            }
+
+            return str;
         }
     }
 }

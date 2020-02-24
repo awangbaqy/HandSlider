@@ -267,7 +267,6 @@ namespace Thresholding
         {
             string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
             Image image = Image.FromFile(images[counter]);
-            lblNama.Text = Path.GetFileNameWithoutExtension(images[counter]);
 
             testdata((Bitmap)image);
 

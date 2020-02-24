@@ -55,8 +55,6 @@
             this.radioButton_YCbCr = new System.Windows.Forms.RadioButton();
             this.radioButton_Combined = new System.Windows.Forms.RadioButton();
             this.radioButton_Final = new System.Windows.Forms.RadioButton();
-            this.lblNama = new System.Windows.Forms.Label();
-            this.cbPause = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox0)).BeginInit();
@@ -357,32 +355,11 @@
             this.radioButton_Final.Text = "Final";
             this.radioButton_Final.UseVisualStyleBackColor = true;
             // 
-            // lblNama
-            // 
-            this.lblNama.AutoSize = true;
-            this.lblNama.Location = new System.Drawing.Point(122, 337);
-            this.lblNama.Name = "lblNama";
-            this.lblNama.Size = new System.Drawing.Size(35, 13);
-            this.lblNama.TabIndex = 19;
-            this.lblNama.Text = "label9";
-            // 
-            // cbPause
-            // 
-            this.cbPause.AutoSize = true;
-            this.cbPause.Location = new System.Drawing.Point(12, 337);
-            this.cbPause.Name = "cbPause";
-            this.cbPause.Size = new System.Drawing.Size(55, 17);
-            this.cbPause.TabIndex = 20;
-            this.cbPause.Text = "pause";
-            this.cbPause.UseVisualStyleBackColor = true;
-            // 
             // FormThresholding
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1172, 587);
-            this.Controls.Add(this.cbPause);
-            this.Controls.Add(this.lblNama);
             this.Controls.Add(this.radioButton_Final);
             this.Controls.Add(this.radioButton_Combined);
             this.Controls.Add(this.radioButton_YCbCr);
@@ -440,8 +417,6 @@
         private System.Windows.Forms.RadioButton radioButton_YCbCr;
         private System.Windows.Forms.RadioButton radioButton_Combined;
         private System.Windows.Forms.RadioButton radioButton_Final;
-        private System.Windows.Forms.Label lblNama;
-        private System.Windows.Forms.CheckBox cbPause;
     }
 }
 

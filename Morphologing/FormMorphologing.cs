@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -46,6 +47,9 @@ namespace Morphologing
         int oldBlue, oldGreen, oldRed, max, min;
         double hue, saturation, value;
         double ye, cebe, ceer;
+
+        Timer moveTimer = new Timer();
+        int counter = 0;
 
         int[,] kernelInt = {
             {0,0,0,1,0,0,0},
@@ -131,10 +135,14 @@ namespace Morphologing
 
         private void FormMorphologing_Load(object sender, EventArgs e)
         {
-            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[0].MonikerString);
-            videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
-            videoCaptureDevice.Start();
+            //filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            //videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[0].MonikerString);
+            //videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
+            //videoCaptureDevice.Start();
+
+            moveTimer.Interval = 1000;
+            moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            moveTimer.Start();
         }
 
         void newFrame(object sender, NewFrameEventArgs eventArgs)
@@ -286,9 +294,9 @@ namespace Morphologing
                     saturation = (max == 0) ? 0 : 1d - (1d * min / max);
                     value = max / 255d;
 
-                    ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
-                    cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
-                    ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
+                    //ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
+                    //cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
+                    //ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
 
                     if ((
                          (0 < (hue / 360) && (hue / 360) < 0.24) ||
@@ -318,9 +326,124 @@ namespace Morphologing
         
         private void FormMorphologing_FormClosing(object sender, FormClosingEventArgs e)
         {
-            videoCaptureDevice.NewFrame -= new NewFrameEventHandler(newFrame);
-            videoCaptureDevice.Stop();
-            videoCaptureDevice.SignalToStop();
+            //videoCaptureDevice.NewFrame -= new NewFrameEventHandler(newFrame);
+            //videoCaptureDevice.Stop();
+            //videoCaptureDevice.SignalToStop();
+        }
+
+        private void moveTimer_Tick(object sender, System.EventArgs e)
+        {
+            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
+            Image image = Image.FromFile(images[counter]);
+            
+            testdata((Bitmap)image);
+
+            if (counter < images.Count() - 1)
+            {
+                counter = counter + 1;
+            }
+            else
+            {
+                counter = 0;
+            }
+        }
+
+        public void testdata(Bitmap bitmapInput)
+        {
+            bitmap = resize(bitmapInput);
+
+            lock (pictureBox0)
+            {
+                pictureBox0.Image = bitmap.Clone() as Bitmap;
+            }
+
+            bitmap = thresholding(bitmap);
+            bitmap = Grayscale.CommonAlgorithms.BT709.Apply(bitmap);
+
+            lock (pictureBox1)
+            {
+                if (radioButton1.Checked)
+                {
+                    bitmap = conservativeSmoothing.Apply(binaryDilation3x3.Apply(binaryErosion3x3.Apply(bitmap)));
+                }
+                else if (radioButton2.Checked)
+                {
+                    bitmap = topHat.Apply(bitmap);
+                }
+                else if (radioButton3.Checked)
+                {
+                    bitmap = closing.Apply(opening.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap))));
+                }
+                else if (radioButton4.Checked)
+                {
+                    bitmap = closing.Apply(median.Apply(bitmap));
+                }
+                else if (radioButton5.Checked)
+                {
+                    bitmap = closing.Apply(opening.Apply(mean.Apply(bitmap)));
+                }
+                else if (radioButton6.Checked)
+                {
+                    bitmap = binaryDilation3x3.Apply(binaryErosion3x3.Apply(bitmap));
+                }
+                else if (radioButton7.Checked)
+                {
+                    // fill holes
+                    bitmap = fillHoles.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap)));
+                }
+                else if (radioButton8.Checked)
+                {
+                    // circular filter
+                    bitmap = convolution.Apply(opening.Apply(closing.Apply(bitmap)));
+                }
+                else if (radioButton9.Checked)
+                {
+                    // circular filter
+                    bitmap = erosion.Apply(dilation.Apply(bitmap));
+                }
+                else if (radioButton10.Checked)
+                {
+                    bitmap = binaryDilation3x3.Apply(median.Apply(bitmap));
+                }
+                else if (radioButton11.Checked)
+                {
+                    // circular filer radius 10
+                    bitmap = closingRadius10.Apply(opening.Apply(bitmap));
+                }
+                else if (radioButton12.Checked)
+                {
+                    bitmap = binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap));
+                }
+                else if (radioButton13.Checked)
+                {
+                    // fill holes
+                    bitmap = fillHoles.Apply(opening.Apply(median.Apply(bitmap)));
+                }
+                else if (radioButton14.Checked)
+                {
+                    // gradient = dilation - erosion
+                    subtract = new Subtract(binaryErosion3x3.Apply(bitmap));
+                    bitmap = subtract.Apply(binaryDilation3x3.Apply(bitmap));
+                }
+                else if (radioButton15.Checked)
+                {
+                    bitmap = closingFull5x5.Apply(bitmap);
+                }
+                else if (radioButton16.Checked)
+                {
+                    bitmap = opening.Apply(closing.Apply(bitmap));
+                }
+                else if (radioButton17.Checked)
+                {
+                    bitmap = opening.Apply(bitmap);
+                }
+                else if (radioButton18.Checked)
+                {
+                    bitmap = median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(bitmap)));
+                }
+
+                pictureBox1.Image = bitmap;
+            }
         }
     }
 }
