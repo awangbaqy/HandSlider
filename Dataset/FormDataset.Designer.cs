@@ -119,9 +119,10 @@
             // pictureBox5
             // 
             this.pictureBox5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox5.Location = new System.Drawing.Point(317, 519);
+            this.pictureBox5.Location = new System.Drawing.Point(299, 519);
             this.pictureBox5.Name = "pictureBox5";
-            this.pictureBox5.Size = new System.Drawing.Size(15, 15);
+            this.pictureBox5.Size = new System.Drawing.Size(33, 33);
+            this.pictureBox5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox5.TabIndex = 8;
             this.pictureBox5.TabStop = false;
             // 

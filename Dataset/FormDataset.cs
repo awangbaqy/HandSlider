@@ -58,6 +58,9 @@ namespace Dataset
             {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
         };
 
+        Color c0, c1, c2, c3, c4, c5, c6, c7;
+        int jr, r0, r1, r2, r3, r4, r5, r6, r7;
+
         public FormDataset()
         {
             InitializeComponent();
@@ -66,15 +69,15 @@ namespace Dataset
             closingRadius10 = new Closing(kernelShortRadius10);
             opening = new Opening();
             
-            destinationBitmap = new Bitmap(15, 15);
-            destinationRectangle = new Rectangle(0, 0, 15, 15);
+            destinationBitmap = new Bitmap(9, 9);
+            destinationRectangle = new Rectangle(0, 0, 9, 9);
         }
 
         private void FormDataset_Load(object sender, EventArgs e)
         {
-            moveTimer.Interval = 10000;
-            moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            moveTimer.Start();
+            //moveTimer.Interval = 1000;
+            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            //moveTimer.Start();
         }
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
@@ -92,8 +95,10 @@ namespace Dataset
             pictureBox4.Image = resultMorphologing;
             resultResize = resizing(resultMorphologing);
             pictureBox5.Image = resultResize;
-            labelHX.Text = "H / X : " + lineHX(resultResize);
-            labelVY.Text = "V / Y : " + lineVY(resultResize);
+
+            labelHX.Text = cc(resultResize);
+            //labelHX.Text = "H / X : " + lineHX(resultResize);
+            //labelVY.Text = "V / Y : " + lineVY(resultResize);
             
             if (counter < images.Count() - 1)
             {
@@ -111,19 +116,43 @@ namespace Dataset
             {
                 ShowNewFolderButton = true
             };
-
+            
             if (folderDlg.ShowDialog() == DialogResult.OK)
             {
-                Environment.SpecialFolder root = folderDlg.RootFolder;
+                string str = "";
 
-                //List<Image> pictureArray = new List<Image>();
-                //foreach (string item in Directory.GetFiles(folderDlg.SelectedPath, "*.jpg", SearchOption.AllDirectories))
-                //{
-                //    Image _image = Image.FromFile(item);
+                List<System.Drawing.Image> pictureArray = new List<System.Drawing.Image>();
+                foreach (string item in Directory.GetFiles(folderDlg.SelectedPath, "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image _image = System.Drawing.Image.FromFile(item);
 
-                //    resultThresholding = thresholding((Bitmap)_image);
-                //    resultMorphologing = morphologing(resultThresholding);
-                //}
+                    pictureBox1.Image = _image;
+                    resultThresholding = thresholding((Bitmap)_image);
+                    pictureBox2.Image = resultThresholding;
+                    resultMorphologing = morphologing(resultThresholding);
+                    pictureBox3.Image = resultMorphologing;
+                    blobCounter.ProcessImage(resultMorphologing);
+                    resultMorphologing = new ExtractBiggestBlob().Apply(resultMorphologing);
+                    pictureBox4.Image = resultMorphologing;
+                    resultResize = resizing(resultMorphologing);
+                    pictureBox5.Image = resultResize;
+
+                    //str = cc(resultResize);
+                    //for (int i = 1; i < 199; i++)
+                    //{
+                    //    if (i % 2 != 0)
+                    //    {
+                    //        str = str.Insert(i, "-");
+                    //    }
+                    //}
+
+                    labelHX.Text = "H / X : " + lineHX(resultResize);
+                    labelVY.Text = "V / Y : " + lineVY(resultResize);
+
+                    str = lineHX(resultResize) + "-" + lineVY(resultResize);
+
+                    Console.WriteLine(str);
+                }
             }
         }
 
@@ -214,6 +243,179 @@ namespace Dataset
             return destinationBitmap;
         }
 
+        public string cc(Bitmap bit)
+        {
+            string str = "";
+
+            for (int x = 0; x < bit.Width; x++)
+            {
+                if (x == 0 || (x > 1 && x % 2 == 0))
+                {
+                    for (int y = bit.Height - 1; y >= 0; y--)
+                    {
+                        Color clr = bit.GetPixel(x, y);
+                        if (x < bit.Width - 1)
+                        {
+                            c0 = bit.GetPixel(x + 1, y);
+                            r0 = c0.R;
+                            if (r0 == 255) { r0 = 0; }
+                            else { r0 = 1; }
+                        }
+                        else { r0 = 0; }
+
+                        if (x < bit.Width - 1 && y > 0)
+                        {
+                            c1 = bit.GetPixel(x + 1, y - 1);
+                            r1 = c1.R;
+                            if (r1 == 255) { r1 = 0; }
+                            else { r1 = 1; }
+                        }
+                        else { r1 = 0; }
+
+                        if (y > 0)
+                        {
+                            c2 = bit.GetPixel(x, y - 1);
+                            r2 = c2.R;
+                            if (r2 == 255) { r2 = 0; }
+                            else { r2 = 1; }
+                        }
+                        else { r2 = 0; }
+
+                        if (x > 0 && y > 0)
+                        {
+                            c3 = bit.GetPixel(x - 1, y - 1);
+                            r3 = c3.R;
+                            if (r3 == 255) { r3 = 0; }
+                            else { r3 = 1; }
+                        }
+                        else { r3 = 0; }
+
+                        if (x > 0)
+                        {
+                            c4 = bit.GetPixel(x - 1, y);
+                            r4 = c4.R;
+                            if (r4 == 255) { r4 = 0; }
+                            else { r4 = 1; }
+                        }
+                        else { r4 = 0; }
+
+                        if (x > 0 && y < bit.Height - 1)
+                        {
+                            c5 = bit.GetPixel(x - 1, y + 1);
+                            r5 = c5.R;
+                            if (r5 == 255) { r5 = 0; }
+                            else { r5 = 1; }
+                        }
+                        else { r5 = 0; }
+
+                        if (y < bit.Height - 1)
+                        {
+                            c6 = bit.GetPixel(x, y + 1);
+                            r6 = c6.R;
+                            if (r6 == 255) { r6 = 0; }
+                            else { r6 = 1; }
+                        }
+                        else { r6 = 0; }
+
+                        if (x < bit.Width - 1 && y < bit.Height - 1)
+                        {
+                            c7 = bit.GetPixel(x + 1, y + 1);
+                            r7 = c7.R;
+                            if (r7 == 255) { r7 = 0; }
+                            else { r7 = 1; }
+                        }
+                        else { r7 = 0; }
+
+                        jr = r0 + r1 + r2 + r3 + r4 + r5 + r6 + r7;
+                        str = str + jr.ToString();
+                    }
+                }
+                else if (x == 1 || (x > 1 && x % 2 == 1))
+                {
+                    for (int y = 0; y < bit.Height; y++)
+                    {
+                        Color clr = bit.GetPixel(x, y);
+                        if (x < bit.Width - 1)
+                        {
+                            c0 = bit.GetPixel(x + 1, y);
+                            r0 = c0.R;
+                            if (r0 == 255) { r0 = 0; }
+                            else { r0 = 1; }
+                        }
+                        else { r0 = 0; }
+
+                        if (x < bit.Width - 1 && y > 0)
+                        {
+                            c1 = bit.GetPixel(x + 1, y - 1);
+                            r1 = c1.R;
+                            if (r1 == 255) { r1 = 0; }
+                            else { r1 = 1; }
+                        }
+                        else { r1 = 0; }
+
+                        if (y > 0)
+                        {
+                            c2 = bit.GetPixel(x, y - 1);
+                            r2 = c2.R;
+                            if (r2 == 255) { r2 = 0; }
+                            else { r2 = 1; }
+                        }
+                        else { r2 = 0; }
+
+                        if (x > 0 && y > 0)
+                        {
+                            c3 = bit.GetPixel(x - 1, y - 1);
+                            r3 = c3.R;
+                            if (r3 == 255) { r3 = 0; }
+                            else { r3 = 1; }
+                        }
+                        else { r3 = 0; }
+
+                        if (x > 0)
+                        {
+                            c4 = bit.GetPixel(x - 1, y);
+                            r4 = c4.R;
+                            if (r4 == 255) { r4 = 0; }
+                            else { r4 = 1; }
+                        }
+                        else { r4 = 0; }
+
+                        if (x > 0 && y < bit.Height - 1)
+                        {
+                            c5 = bit.GetPixel(x - 1, y + 1);
+                            r5 = c5.R;
+                            if (r5 == 255) { r5 = 0; }
+                            else { r5 = 1; }
+                        }
+                        else { r5 = 0; }
+
+                        if (y < bit.Height - 1)
+                        {
+                            c6 = bit.GetPixel(x, y + 1);
+                            r6 = c6.R;
+                            if (r6 == 255) { r6 = 0; }
+                            else { r6 = 1; }
+                        }
+                        else { r6 = 0; }
+
+                        if (x < bit.Width - 1 && y < bit.Height - 1)
+                        {
+                            c7 = bit.GetPixel(x + 1, y + 1);
+                            r7 = c7.R;
+                            if (r7 == 255) { r7 = 0; }
+                            else { r7 = 1; }
+                        }
+                        else { r7 = 0; }
+
+                        jr = r0 + r1 + r2 + r3 + r4 + r5 + r6 + r7;
+                        str = str + jr.ToString();
+                    }
+                }
+            }
+
+            return str;
+        }
+
         private string lineHX(Bitmap bit)
         {
             string str = "";
@@ -230,7 +432,13 @@ namespace Dataset
                         count += 1;
                     }
                 }
-                str += count.ToString() + ",";
+
+                str += count.ToString();
+
+                if (i != bit.Width - 1)
+                {
+                    str += "-";
+                }
             }
 
             return str;
@@ -252,7 +460,13 @@ namespace Dataset
                         count += 1;
                     }
                 }
-                str += count.ToString() + ",";
+
+                str += count.ToString();
+
+                if (i != bit.Width - 1)
+                {
+                    str += "-";
+                }
             }
 
             return str;
