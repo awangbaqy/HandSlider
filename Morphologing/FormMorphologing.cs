@@ -41,7 +41,8 @@ namespace Morphologing
         Opening opening;
         Subtract subtract;
         TopHat topHat;
-        
+
+        bool skin;
         byte[] pixels;
         int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
         int oldBlue, oldGreen, oldRed, max, min;
@@ -135,19 +136,19 @@ namespace Morphologing
 
         private void FormMorphologing_Load(object sender, EventArgs e)
         {
-            //filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            //videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[0].MonikerString);
-            //videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
-            //videoCaptureDevice.Start();
+            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[0].MonikerString);
+            videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
+            videoCaptureDevice.Start();
 
-            moveTimer.Interval = 1000;
-            moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            moveTimer.Start();
+            //moveTimer.Interval = 1000;
+            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            //moveTimer.Start();
         }
 
         void newFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            bitmap = resize(eventArgs.Frame);
+            bitmap = resizing(eventArgs.Frame);
 
             lock (pictureBox0)
             {
@@ -243,7 +244,7 @@ namespace Morphologing
             }
         }
 
-        private Bitmap resize(Bitmap bit)
+        private Bitmap resizing(Bitmap bit)
         {
             destinationBitmap.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
 
@@ -265,12 +266,12 @@ namespace Morphologing
             return destinationBitmap;
         }
 
-        private Bitmap thresholding(Bitmap bit)
+        private Bitmap thresholding(Bitmap bitmap)
         {
-            bitmapData = bit.LockBits(new Rectangle(0, 0, bit.Width, bit.Height), ImageLockMode.ReadWrite, bit.PixelFormat);
+            bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, bitmap.PixelFormat);
 
-            bytesPerPixel = Bitmap.GetPixelFormatSize(bit.PixelFormat) / 8;
-            byteCount = bitmapData.Stride * bit.Height;
+            bytesPerPixel = Bitmap.GetPixelFormatSize(bitmap.PixelFormat) / 8;
+            byteCount = bitmapData.Stride * bitmap.Height;
             pixels = new byte[byteCount];
             IntPtr ptrFirstPixel = bitmapData.Scan0;
             Marshal.Copy(ptrFirstPixel, pixels, 0, pixels.Length);
@@ -282,28 +283,17 @@ namespace Morphologing
                 currentLine = y * bitmapData.Stride;
                 for (x = 0; x < widthInBytes; x = x + bytesPerPixel)
                 {
+                    skin = false;
+
                     oldBlue = pixels[currentLine + x];
                     oldGreen = pixels[currentLine + x + 1];
                     oldRed = pixels[currentLine + x + 2];
 
-                    max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
-                    min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
+                    ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
+                    cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
+                    ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
 
-                    Color color = Color.FromArgb(oldRed, oldGreen, oldBlue);
-                    hue = color.GetHue();
-                    saturation = (max == 0) ? 0 : 1d - (1d * min / max);
-                    value = max / 255d;
-
-                    //ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
-                    //cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
-                    //ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
-
-                    if ((
-                         (0 < (hue / 360) && (hue / 360) < 0.24) ||
-                         (0.74 < (hue / 360) && (hue / 360) < 1)
-                        ) &&
-                        0.16 < saturation && saturation < 0.79)
-                    //if (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173)
+                    if (78 <= cebe && cebe <= 126 && 134 <= ceer && ceer <= 172)
                     {
                         pixels[currentLine + x] = (byte)255;
                         pixels[currentLine + x + 1] = (byte)255;
@@ -319,16 +309,16 @@ namespace Morphologing
             }
 
             Marshal.Copy(pixels, 0, ptrFirstPixel, pixels.Length);
-            bit.UnlockBits(bitmapData);
+            bitmap.UnlockBits(bitmapData);
 
-            return bit;
+            return bitmap;
         }
         
         private void FormMorphologing_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //videoCaptureDevice.NewFrame -= new NewFrameEventHandler(newFrame);
-            //videoCaptureDevice.Stop();
-            //videoCaptureDevice.SignalToStop();
+            videoCaptureDevice.NewFrame -= new NewFrameEventHandler(newFrame);
+            videoCaptureDevice.Stop();
+            videoCaptureDevice.SignalToStop();
         }
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
@@ -350,7 +340,7 @@ namespace Morphologing
 
         public void testdata(Bitmap bitmapInput)
         {
-            bitmap = resize(bitmapInput);
+            bitmap = resizing(bitmapInput);
 
             lock (pictureBox0)
             {

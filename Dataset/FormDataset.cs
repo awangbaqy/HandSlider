@@ -14,26 +14,30 @@ namespace Dataset
 {
     public partial class FormDataset : Form
     {
+        BinaryErosion3x3 binaryErosion3x3;
+        BinaryDilation3x3 binaryDilation3x3;
         Bitmap resultThresholding, resultMorphologing, destinationBitmap, resultResize;
         BitmapData bitmapData;
-        Graphics graphics;
-        ImageAttributes imageAttributes;
-        Rectangle destinationRectangle;
-
         BlobCounter blobCounter;
         Blob[] blobs;
         Closing closingRadius10;
+        Color c0, c1, c2, c3, c4, c5, c6, c7;
+        Graphics graphics;
+        Grayscale grayscale;
+        ImageAttributes imageAttributes;
+        Median median;
         Opening opening;
-
+        Rectangle destinationRectangle;
         Timer moveTimer = new Timer();
-        int counter = 0;
-
+        
+        bool skin;
         byte[] pixels;
-        int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
-        int oldBlue, oldGreen, oldRed, max, min;
         double hue, saturation, value;
         double ye, cebe, ceer;
-
+        int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
+        int counter = 0;
+        int jr, r0, r1, r2, r3, r4, r5, r6, r7;
+        int oldBlue, oldGreen, oldRed, max, min;
         short[,] kernelShortRadius10 = {
             {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
             {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
@@ -57,27 +61,27 @@ namespace Dataset
             {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
             {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
         };
-
-        Color c0, c1, c2, c3, c4, c5, c6, c7;
-        int jr, r0, r1, r2, r3, r4, r5, r6, r7;
-
+        
         public FormDataset()
         {
             InitializeComponent();
 
+            binaryDilation3x3 = new BinaryDilation3x3();
+            binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
             closingRadius10 = new Closing(kernelShortRadius10);
-            opening = new Opening();
-            
             destinationBitmap = new Bitmap(9, 9);
             destinationRectangle = new Rectangle(0, 0, 9, 9);
+            grayscale = Grayscale.CommonAlgorithms.BT709;
+            median = new Median();
+            opening = new Opening();
         }
 
         private void FormDataset_Load(object sender, EventArgs e)
         {
-            //moveTimer.Interval = 1000;
-            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            //moveTimer.Start();
+            moveTimer.Interval = 1000;
+            moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            moveTimer.Start();
         }
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
@@ -85,20 +89,7 @@ namespace Dataset
             string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
             System.Drawing.Image image = System.Drawing.Image.FromFile(images[counter]);
 
-            pictureBox1.Image = image;
-            resultThresholding = thresholding((Bitmap)image);
-            pictureBox2.Image = resultThresholding;
-            resultMorphologing = morphologing(resultThresholding);
-            pictureBox3.Image = resultMorphologing;
-            blobCounter.ProcessImage(resultMorphologing);
-            resultMorphologing = new ExtractBiggestBlob().Apply(resultMorphologing);
-            pictureBox4.Image = resultMorphologing;
-            resultResize = resizing(resultMorphologing);
-            pictureBox5.Image = resultResize;
-
-            labelHX.Text = cc(resultResize);
-            //labelHX.Text = "H / X : " + lineHX(resultResize);
-            //labelVY.Text = "V / Y : " + lineVY(resultResize);
+            pre_processing(image);
             
             if (counter < images.Count() - 1)
             {
@@ -119,49 +110,22 @@ namespace Dataset
             
             if (folderDlg.ShowDialog() == DialogResult.OK)
             {
-                string str = "";
-
                 List<System.Drawing.Image> pictureArray = new List<System.Drawing.Image>();
                 foreach (string item in Directory.GetFiles(folderDlg.SelectedPath, "*.jpg", SearchOption.AllDirectories))
                 {
-                    System.Drawing.Image _image = System.Drawing.Image.FromFile(item);
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                    pictureBox1.Image = _image;
-                    resultThresholding = thresholding((Bitmap)_image);
-                    pictureBox2.Image = resultThresholding;
-                    resultMorphologing = morphologing(resultThresholding);
-                    pictureBox3.Image = resultMorphologing;
-                    blobCounter.ProcessImage(resultMorphologing);
-                    resultMorphologing = new ExtractBiggestBlob().Apply(resultMorphologing);
-                    pictureBox4.Image = resultMorphologing;
-                    resultResize = resizing(resultMorphologing);
-                    pictureBox5.Image = resultResize;
-
-                    //str = cc(resultResize);
-                    //for (int i = 1; i < 199; i++)
-                    //{
-                    //    if (i % 2 != 0)
-                    //    {
-                    //        str = str.Insert(i, "-");
-                    //    }
-                    //}
-
-                    labelHX.Text = "H / X : " + lineHX(resultResize);
-                    labelVY.Text = "V / Y : " + lineVY(resultResize);
-
-                    str = lineHX(resultResize) + "-" + lineVY(resultResize);
-
-                    Console.WriteLine(str);
+                    pre_processing(image);
                 }
             }
         }
 
-        private Bitmap thresholding(Bitmap bit)
+        private Bitmap thresholding(Bitmap bitmap)
         {
-            bitmapData = bit.LockBits(new Rectangle(0, 0, bit.Width, bit.Height), ImageLockMode.ReadWrite, bit.PixelFormat);
+            bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, bitmap.PixelFormat);
 
-            bytesPerPixel = Bitmap.GetPixelFormatSize(bit.PixelFormat) / 8;
-            byteCount = bitmapData.Stride * bit.Height;
+            bytesPerPixel = Bitmap.GetPixelFormatSize(bitmap.PixelFormat) / 8;
+            byteCount = bitmapData.Stride * bitmap.Height;
             pixels = new byte[byteCount];
             IntPtr ptrFirstPixel = bitmapData.Scan0;
             Marshal.Copy(ptrFirstPixel, pixels, 0, pixels.Length);
@@ -173,52 +137,40 @@ namespace Dataset
                 currentLine = y * bitmapData.Stride;
                 for (x = 0; x < widthInBytes; x = x + bytesPerPixel)
                 {
+                    skin = false;
+
                     oldBlue = pixels[currentLine + x];
                     oldGreen = pixels[currentLine + x + 1];
                     oldRed = pixels[currentLine + x + 2];
 
-                    max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
-                    min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
+                    ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
+                    cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
+                    ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
 
-                    Color color = Color.FromArgb(oldRed, oldGreen, oldBlue);
-                    hue = color.GetHue();
-                    saturation = (max == 0) ? 0 : 1d - (1d * min / max);
-                    value = max / 255d;
-
-                    //ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
-                    //cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
-                    //ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
-
-                    if ((
-                         (0 < (hue / 360) && (hue / 360) < 0.24) ||
-                         (0.74 < (hue / 360) && (hue / 360) < 1)
-                        ) &&
-                        0.16 < saturation && saturation < 0.79)
-                    //if (77 < cebe && cebe < 127 && 133 < ceer && ceer < 173)
+                    if (78 <= cebe && cebe <= 126 && 134 <= ceer && ceer <= 172)
                     {
-                        pixels[currentLine + x] = 255;
-                        pixels[currentLine + x + 1] = 255;
-                        pixels[currentLine + x + 2] = 255;
+                        pixels[currentLine + x] = (byte)255;
+                        pixels[currentLine + x + 1] = (byte)255;
+                        pixels[currentLine + x + 2] = (byte)255;
                     }
                     else
                     {
-                        pixels[currentLine + x] = 0;
-                        pixels[currentLine + x + 1] = 0;
-                        pixels[currentLine + x + 2] = 0;
+                        pixels[currentLine + x] = (byte)0;
+                        pixels[currentLine + x + 1] = (byte)0;
+                        pixels[currentLine + x + 2] = (byte)0;
                     }
                 }
             }
 
             Marshal.Copy(pixels, 0, ptrFirstPixel, pixels.Length);
-            bit.UnlockBits(bitmapData);
+            bitmap.UnlockBits(bitmapData);
 
-            return bit;
+            return bitmap;
         }
 
-        private Bitmap morphologing(Bitmap bit)
+        private Bitmap morphologing(Bitmap bitmap)
         {
-            // circular filer radius 10
-            return closingRadius10.Apply(opening.Apply(bit));
+            return median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(grayscale.Apply(bitmap))));
         }
 
         private Bitmap resizing(Bitmap bit)
@@ -470,6 +422,39 @@ namespace Dataset
             }
 
             return str;
+        }
+
+        private void pre_processing(System.Drawing.Image image)
+        {
+            //string str = "";
+
+            pictureBox1.Image = image.Clone() as Bitmap;
+            resultThresholding = thresholding((Bitmap)image);
+            pictureBox2.Image = resultThresholding.Clone() as Bitmap;
+            resultMorphologing = morphologing(resultThresholding);
+            pictureBox3.Image = resultMorphologing.Clone() as Bitmap;
+            blobCounter.ProcessImage(resultMorphologing);
+            resultMorphologing = new ExtractBiggestBlob().Apply(resultMorphologing);
+            pictureBox4.Image = resultMorphologing.Clone() as Bitmap;
+            resultResize = resizing(resultMorphologing);
+            pictureBox5.Image = resultResize.Clone() as Bitmap;
+
+            //labelHX.Text = cc(resultResize);
+
+            //str = cc(resultResize);
+            //for (int i = 1; i < 199; i++)
+            //{
+            //    if (i % 2 != 0)
+            //    {
+            //        str = str.Insert(i, "-");
+            //    }
+            //}
+
+            labelHX.Text = "H / X : " + lineHX(resultResize);
+            labelVY.Text = "V / Y : " + lineVY(resultResize);
+
+            //str = lineHX(resultResize) + "-" + lineVY(resultResize);
+            //Console.WriteLine(str);
         }
     }
 }

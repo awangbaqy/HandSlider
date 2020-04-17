@@ -15,23 +15,26 @@ namespace HandSlider
 {
     public partial class FormHandSlider : Form
     {
-        Bitmap frame, frame2, bit3, destImage = new Bitmap(320, 240);
+        BinaryDilation3x3 binaryDilation3x3;
+        BinaryErosion3x3 binaryErosion3x3;
+        Bitmap frame, frame2, bit3, destImage;
         BitmapData bitmapData;
-        BlobCounter blobCounter = new BlobCounter();
+        BlobCounter blobCounter;
         Blob[] blobs;
         Color color, c;
-        Dictionary<int, double> histoR = new Dictionary<int, double>();
-        Dictionary<int, double> histoG = new Dictionary<int, double>();
-        Dictionary<int, double> histoB = new Dictionary<int, double>();
-        Dilation dilation = new Dilation();
+        Dictionary<int, double> histoR;
+        Dictionary<int, double> histoG;
+        Dictionary<int, double> histoB;
+        Dilation dilation;
         FilterInfoCollection fic;
         Graphics graphics, g;
-        Grayscale grayscale = Grayscale.CommonAlgorithms.BT709;
+        Grayscale grayscale;
         ImageAttributes wrapMode;
-        Opening opening = new Opening(new short[3,3]);
-        Pen rectPen = new Pen(Color.Blue);
-        Rectangle destRect = new Rectangle(0, 0, 320, 240);
-        Threshold t = new Threshold();
+        Median median;
+        Opening opening;
+        Pen rectPen;
+        Rectangle destRect;
+        Threshold t;
         VideoCaptureDevice vcd;
         
         bool skin;
@@ -46,6 +49,21 @@ namespace HandSlider
         {
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.DoubleBuffer | ControlStyles.UserPaint, true);
+
+            destImage = new Bitmap(480, 360);
+            binaryDilation3x3 = new BinaryDilation3x3();
+            binaryErosion3x3 = new BinaryErosion3x3();
+            blobCounter = new BlobCounter();
+            histoR = new Dictionary<int, double>();
+            histoG = new Dictionary<int, double>();
+            histoB = new Dictionary<int, double>();
+            dilation = new Dilation();
+            grayscale = Grayscale.CommonAlgorithms.BT709;
+            median = new Median();
+            opening = new Opening(new short[3, 3]);
+            rectPen = new Pen(Color.Blue);
+            destRect = new Rectangle(0, 0, 480, 360);
+            t = new Threshold();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -65,8 +83,7 @@ namespace HandSlider
 
         private void newFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            frame = eventArgs.Frame;
-            frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            frame = resizing(eventArgs.Frame);
 
             if (rbOriginal.Checked)
             {
@@ -85,7 +102,7 @@ namespace HandSlider
                     pictureBox1.Image = frame.Clone() as Bitmap;
                 }
             }
-
+            
             frame = morphologing(frame.Clone() as Bitmap);
 
             if (rbMorphology.Checked)
@@ -210,7 +227,6 @@ namespace HandSlider
         private Bitmap thresholding(Bitmap bitmap)
         {
             bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, bitmap.PixelFormat);
-
             bytesPerPixel = Bitmap.GetPixelFormatSize(bitmap.PixelFormat) / 8;
             byteCount = bitmapData.Stride * bitmap.Height;
             pixels = new byte[byteCount];
@@ -229,29 +245,12 @@ namespace HandSlider
                     oldBlue = pixels[currentLine + x];
                     oldGreen = pixels[currentLine + x + 1];
                     oldRed = pixels[currentLine + x + 2];
-                    
-                    max = Math.Max(oldRed, Math.Max(oldGreen, oldBlue));
-                    min = Math.Min(oldRed, Math.Min(oldGreen, oldBlue));
-
-                    Color color = Color.FromArgb(oldRed, oldGreen, oldBlue);
-                    hue = color.GetHue();
-                    saturation = (max == 0) ? 0 : 1d - (1d * min / max);
-                    value = max / 255d;
 
                     ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
                     cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
                     ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
 
-                    if (
-                        oldRed > 95 && oldGreen > 40 && oldBlue > 20 &&
-                        (max - min) > 15 && Math.Abs(oldRed - oldGreen) > 15 &&
-                        oldRed > oldGreen && oldRed > oldBlue
-                       )
-                    {
-                        skin = true;
-                    }
-
-                    if (skin == true)
+                    if (78 <= cebe && cebe <= 126 && 134 <= ceer && ceer <= 172)
                     {
                         pixels[currentLine + x] = (byte)255;
                         pixels[currentLine + x + 1] = (byte)255;
@@ -272,9 +271,9 @@ namespace HandSlider
             return bitmap;
         }
         
-        private Bitmap resize(Bitmap bit)
+        private Bitmap resizing(Bitmap bitmap)
         {
-            destImage.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
+            destImage.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
 
             using (graphics = Graphics.FromImage(destImage))
             {
@@ -287,7 +286,7 @@ namespace HandSlider
                 using (wrapMode = new ImageAttributes())
                 {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(bit, destRect, 0, 0, bit.Width, bit.Height, GraphicsUnit.Pixel, wrapMode);
+                    graphics.DrawImage(bitmap, destRect, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, wrapMode);
                 }
             }
 
@@ -296,7 +295,7 @@ namespace HandSlider
 
         private Bitmap morphologing(Bitmap bitmap)
         {
-            return bitmap;
+            return median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(grayscale.Apply(bitmap))));
         }
 
         private Bitmap OpenMorphologyFilter(Bitmap sourceBitmap, int matrixSize, bool applyBlue = true, bool applyGreen = true, bool applyRed = true)

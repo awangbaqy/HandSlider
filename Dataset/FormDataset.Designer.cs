@@ -106,6 +106,7 @@
             this.labelVY.Size = new System.Drawing.Size(38, 13);
             this.labelVY.TabIndex = 6;
             this.labelVY.Text = "V / Y :";
+            this.labelVY.Visible = false;
             // 
             // labelHX
             // 
@@ -115,6 +116,7 @@
             this.labelHX.Size = new System.Drawing.Size(39, 13);
             this.labelHX.TabIndex = 7;
             this.labelHX.Text = "H / X :";
+            this.labelHX.Visible = false;
             // 
             // pictureBox5
             // 
@@ -125,6 +127,7 @@
             this.pictureBox5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox5.TabIndex = 8;
             this.pictureBox5.TabStop = false;
+            this.pictureBox5.Visible = false;
             // 
             // FormDataset
             // 
@@ -141,7 +144,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormDataset";
-            this.Text = "Form1";
+            this.Text = "Form Data Set";
             this.Load += new System.EventHandler(this.FormDataset_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
