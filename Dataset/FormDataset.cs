@@ -16,20 +16,24 @@ namespace Dataset
     {
         BinaryErosion3x3 binaryErosion3x3;
         BinaryDilation3x3 binaryDilation3x3;
-        Bitmap resultThresholding, resultMorphologing, destinationBitmap, resultResize;
+        Bitmap destinationBitmap, resultThresholding, resultMorphologing, resultBlobing, resultResizing, resultBinaring, returnedBitmap;
         BitmapData bitmapData;
         BlobCounter blobCounter;
         Blob[] blobs;
         Closing closingRadius10;
-        Color c0, c1, c2, c3, c4, c5, c6, c7;
+        Color c, c0, c1, c2, c3, c4, c5, c6, c7;
+        GaborFilter gaborFilter;
         Graphics graphics;
         Grayscale grayscale;
+        GrayscaleToRGB grayscaleToRGB;
         ImageAttributes imageAttributes;
         Median median;
         Opening opening;
         Rectangle destinationRectangle;
-        Timer moveTimer = new Timer();
-        
+        Threshold threshold;
+        Timer moveTimer;
+        ZhangSuenSkeletonization zhangSuenSkeletonization;
+
         bool skin;
         byte[] pixels;
         double hue, saturation, value;
@@ -70,27 +74,65 @@ namespace Dataset
             binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
             closingRadius10 = new Closing(kernelShortRadius10);
-            destinationBitmap = new Bitmap(9, 9);
-            destinationRectangle = new Rectangle(0, 0, 9, 9);
+            destinationBitmap = new Bitmap(5, 5);
+            destinationRectangle = new Rectangle(0, 0, 5, 5);
+            gaborFilter = new GaborFilter();
             grayscale = Grayscale.CommonAlgorithms.BT709;
+            grayscaleToRGB = new GrayscaleToRGB();
             median = new Median();
+            moveTimer = new Timer();
             opening = new Opening();
+            threshold = new Threshold(128);
+            zhangSuenSkeletonization = new ZhangSuenSkeletonization();
         }
 
         private void FormDataset_Load(object sender, EventArgs e)
         {
-            moveTimer.Interval = 1000;
-            moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            moveTimer.Start();
+            //moveTimer.Interval = 1000;
+            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            //moveTimer.Start();
+            Console.WriteLine("ikuzo F");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Flat", "*.jpg", SearchOption.AllDirectories))
+            {
+                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                pre_processing(image);
+
+                //returnedBitmap = pre_processing(image);
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+            }
+            Console.WriteLine("S");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Spread", "*.jpg", SearchOption.AllDirectories))
+            {
+                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                pre_processing(image);
+
+                //returnedBitmap = pre_processing(image);
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+            }
+            Console.WriteLine("V");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg", SearchOption.AllDirectories))
+            {
+                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                pre_processing(image);
+
+                //returnedBitmap = pre_processing(image);
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+            }
+            Console.WriteLine("chotto");
+            Close();
         }
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
         {
-            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
+            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Flat", "*.jpg");
             System.Drawing.Image image = System.Drawing.Image.FromFile(images[counter]);
-
             pre_processing(image);
-            
+
+            //returnedBitmap.Save(@"C:\Users\hp\Desktop\Ve\image" + counter + ".png");
+
             if (counter < images.Count() - 1)
             {
                 counter = counter + 1;
@@ -173,9 +215,9 @@ namespace Dataset
             return median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(grayscale.Apply(bitmap))));
         }
 
-        private Bitmap resizing(Bitmap bit)
+        private Bitmap resizing(Bitmap bitmap)
         {
-            destinationBitmap.SetResolution(bit.HorizontalResolution, bit.VerticalResolution);
+            destinationBitmap.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
 
             using (graphics = Graphics.FromImage(destinationBitmap))
             {
@@ -188,92 +230,92 @@ namespace Dataset
                 using (imageAttributes = new ImageAttributes())
                 {
                     imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(bit, destinationRectangle, 0, 0, bit.Width, bit.Height, GraphicsUnit.Pixel, imageAttributes);
+                    graphics.DrawImage(bitmap, destinationRectangle, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, imageAttributes);
                 }
             }
 
             return destinationBitmap;
         }
 
-        public string cc(Bitmap bit)
+        private string chaincode(Bitmap bitmap)
         {
             string str = "";
-
-            for (int x = 0; x < bit.Width; x++)
+            
+            for (int x = 0; x < bitmap.Width; x++)
             {
                 if (x == 0 || (x > 1 && x % 2 == 0))
                 {
-                    for (int y = bit.Height - 1; y >= 0; y--)
+                    for (int y = bitmap.Height - 1; y >= 0; y--)
                     {
-                        Color clr = bit.GetPixel(x, y);
-                        if (x < bit.Width - 1)
+                        Color clr = bitmap.GetPixel(x, y);
+                        if (x < bitmap.Width - 1)
                         {
-                            c0 = bit.GetPixel(x + 1, y);
+                            c0 = bitmap.GetPixel(x + 1, y);
                             r0 = c0.R;
-                            if (r0 == 255) { r0 = 0; }
+                            if (r0 == 0) { r0 = 0; }
                             else { r0 = 1; }
                         }
                         else { r0 = 0; }
 
-                        if (x < bit.Width - 1 && y > 0)
+                        if (x < bitmap.Width - 1 && y > 0)
                         {
-                            c1 = bit.GetPixel(x + 1, y - 1);
+                            c1 = bitmap.GetPixel(x + 1, y - 1);
                             r1 = c1.R;
-                            if (r1 == 255) { r1 = 0; }
+                            if (r1 == 0) { r1 = 0; }
                             else { r1 = 1; }
                         }
                         else { r1 = 0; }
 
                         if (y > 0)
                         {
-                            c2 = bit.GetPixel(x, y - 1);
+                            c2 = bitmap.GetPixel(x, y - 1);
                             r2 = c2.R;
-                            if (r2 == 255) { r2 = 0; }
+                            if (r2 == 0) { r2 = 0; }
                             else { r2 = 1; }
                         }
                         else { r2 = 0; }
 
                         if (x > 0 && y > 0)
                         {
-                            c3 = bit.GetPixel(x - 1, y - 1);
+                            c3 = bitmap.GetPixel(x - 1, y - 1);
                             r3 = c3.R;
-                            if (r3 == 255) { r3 = 0; }
+                            if (r3 == 0) { r3 = 0; }
                             else { r3 = 1; }
                         }
                         else { r3 = 0; }
 
                         if (x > 0)
                         {
-                            c4 = bit.GetPixel(x - 1, y);
+                            c4 = bitmap.GetPixel(x - 1, y);
                             r4 = c4.R;
-                            if (r4 == 255) { r4 = 0; }
+                            if (r4 == 0) { r4 = 0; }
                             else { r4 = 1; }
                         }
                         else { r4 = 0; }
 
-                        if (x > 0 && y < bit.Height - 1)
+                        if (x > 0 && y < bitmap.Height - 1)
                         {
-                            c5 = bit.GetPixel(x - 1, y + 1);
+                            c5 = bitmap.GetPixel(x - 1, y + 1);
                             r5 = c5.R;
-                            if (r5 == 255) { r5 = 0; }
+                            if (r5 == 0) { r5 = 0; }
                             else { r5 = 1; }
                         }
                         else { r5 = 0; }
 
-                        if (y < bit.Height - 1)
+                        if (y < bitmap.Height - 1)
                         {
-                            c6 = bit.GetPixel(x, y + 1);
+                            c6 = bitmap.GetPixel(x, y + 1);
                             r6 = c6.R;
-                            if (r6 == 255) { r6 = 0; }
+                            if (r6 == 0) { r6 = 0; }
                             else { r6 = 1; }
                         }
                         else { r6 = 0; }
 
-                        if (x < bit.Width - 1 && y < bit.Height - 1)
+                        if (x < bitmap.Width - 1 && y < bitmap.Height - 1)
                         {
-                            c7 = bit.GetPixel(x + 1, y + 1);
+                            c7 = bitmap.GetPixel(x + 1, y + 1);
                             r7 = c7.R;
-                            if (r7 == 255) { r7 = 0; }
+                            if (r7 == 0) { r7 = 0; }
                             else { r7 = 1; }
                         }
                         else { r7 = 0; }
@@ -284,83 +326,107 @@ namespace Dataset
                 }
                 else if (x == 1 || (x > 1 && x % 2 == 1))
                 {
-                    for (int y = 0; y < bit.Height; y++)
+                    for (int y = 0; y < bitmap.Height; y++)
                     {
-                        Color clr = bit.GetPixel(x, y);
-                        if (x < bit.Width - 1)
+                        Color clr = bitmap.GetPixel(x, y);
+                        if (x < bitmap.Width - 1)
                         {
-                            c0 = bit.GetPixel(x + 1, y);
+                            c0 = bitmap.GetPixel(x + 1, y);
                             r0 = c0.R;
-                            if (r0 == 255) { r0 = 0; }
+                            if (r0 == 0) { r0 = 0; }
                             else { r0 = 1; }
                         }
                         else { r0 = 0; }
 
-                        if (x < bit.Width - 1 && y > 0)
+                        if (x < bitmap.Width - 1 && y > 0)
                         {
-                            c1 = bit.GetPixel(x + 1, y - 1);
+                            c1 = bitmap.GetPixel(x + 1, y - 1);
                             r1 = c1.R;
-                            if (r1 == 255) { r1 = 0; }
+                            if (r1 == 0) { r1 = 0; }
                             else { r1 = 1; }
                         }
                         else { r1 = 0; }
 
                         if (y > 0)
                         {
-                            c2 = bit.GetPixel(x, y - 1);
+                            c2 = bitmap.GetPixel(x, y - 1);
                             r2 = c2.R;
-                            if (r2 == 255) { r2 = 0; }
+                            if (r2 == 0) { r2 = 0; }
                             else { r2 = 1; }
                         }
                         else { r2 = 0; }
 
                         if (x > 0 && y > 0)
                         {
-                            c3 = bit.GetPixel(x - 1, y - 1);
+                            c3 = bitmap.GetPixel(x - 1, y - 1);
                             r3 = c3.R;
-                            if (r3 == 255) { r3 = 0; }
+                            if (r3 == 0) { r3 = 0; }
                             else { r3 = 1; }
                         }
                         else { r3 = 0; }
 
                         if (x > 0)
                         {
-                            c4 = bit.GetPixel(x - 1, y);
+                            c4 = bitmap.GetPixel(x - 1, y);
                             r4 = c4.R;
-                            if (r4 == 255) { r4 = 0; }
+                            if (r4 == 0) { r4 = 0; }
                             else { r4 = 1; }
                         }
                         else { r4 = 0; }
 
-                        if (x > 0 && y < bit.Height - 1)
+                        if (x > 0 && y < bitmap.Height - 1)
                         {
-                            c5 = bit.GetPixel(x - 1, y + 1);
+                            c5 = bitmap.GetPixel(x - 1, y + 1);
                             r5 = c5.R;
-                            if (r5 == 255) { r5 = 0; }
+                            if (r5 == 0) { r5 = 0; }
                             else { r5 = 1; }
                         }
                         else { r5 = 0; }
 
-                        if (y < bit.Height - 1)
+                        if (y < bitmap.Height - 1)
                         {
-                            c6 = bit.GetPixel(x, y + 1);
+                            c6 = bitmap.GetPixel(x, y + 1);
                             r6 = c6.R;
-                            if (r6 == 255) { r6 = 0; }
+                            if (r6 == 0) { r6 = 0; }
                             else { r6 = 1; }
                         }
                         else { r6 = 0; }
 
-                        if (x < bit.Width - 1 && y < bit.Height - 1)
+                        if (x < bitmap.Width - 1 && y < bitmap.Height - 1)
                         {
-                            c7 = bit.GetPixel(x + 1, y + 1);
+                            c7 = bitmap.GetPixel(x + 1, y + 1);
                             r7 = c7.R;
-                            if (r7 == 255) { r7 = 0; }
+                            if (r7 == 0) { r7 = 0; }
                             else { r7 = 1; }
                         }
                         else { r7 = 0; }
 
                         jr = r0 + r1 + r2 + r3 + r4 + r5 + r6 + r7;
                         str = str + jr.ToString();
+                    }
+                }
+            }
+            
+            return str;
+        }
+
+        private string code(Bitmap bitmap)
+        {
+            string str = "";
+
+            for (int i = 0; i < bitmap.Height; i++)
+            {
+                for (int j = 0; j < bitmap.Width; j++)
+                {
+                    c = bitmap.GetPixel(i, j);
+
+                    if (c.R == 0)
+                    {
+                        str = str + 0;
+                    }
+                    else
+                    {
+                        str = str + 1;
                     }
                 }
             }
@@ -424,37 +490,43 @@ namespace Dataset
             return str;
         }
 
+        //private Bitmap pre_processing(System.Drawing.Image image)
         private void pre_processing(System.Drawing.Image image)
         {
-            //string str = "";
+            string str = "awal";
 
             pictureBox1.Image = image.Clone() as Bitmap;
+
             resultThresholding = thresholding((Bitmap)image);
             pictureBox2.Image = resultThresholding.Clone() as Bitmap;
+
             resultMorphologing = morphologing(resultThresholding);
             pictureBox3.Image = resultMorphologing.Clone() as Bitmap;
+
             blobCounter.ProcessImage(resultMorphologing);
-            resultMorphologing = new ExtractBiggestBlob().Apply(resultMorphologing);
-            pictureBox4.Image = resultMorphologing.Clone() as Bitmap;
-            resultResize = resizing(resultMorphologing);
-            pictureBox5.Image = resultResize.Clone() as Bitmap;
+            resultBlobing = new ExtractBiggestBlob().Apply(resultMorphologing);
+            //resultBlobing = gaborFilter.Apply(resultBlobing);
+            pictureBox4.Image = resultBlobing.Clone() as Bitmap;
 
-            //labelHX.Text = cc(resultResize);
+            resultResizing = resizing(resultBlobing);
+            pictureBox5.Image = resultResizing.Clone() as Bitmap;
 
-            //str = cc(resultResize);
-            //for (int i = 1; i < 199; i++)
-            //{
-            //    if (i % 2 != 0)
-            //    {
-            //        str = str.Insert(i, "-");
-            //    }
-            //}
+            resultBinaring = threshold.Apply(grayscale.Apply(resultResizing));
+            pictureBox6.Image = resultBinaring.Clone() as Bitmap;
 
-            labelHX.Text = "H / X : " + lineHX(resultResize);
-            labelVY.Text = "V / Y : " + lineVY(resultResize);
+            str = code(resultBinaring);
+            for (int i = 1; i < (resultBinaring.Width * resultBinaring.Height * 2) - 1; i++)
+            {
+                if (i % 2 != 0)
+                {
+                    str = str.Insert(i, "-");
+                }
+            }
+            textBox1.Text = str;
 
-            //str = lineHX(resultResize) + "-" + lineVY(resultResize);
-            //Console.WriteLine(str);
+            Console.WriteLine(str);
+
+            //return resultBlobing;
         }
     }
 }
