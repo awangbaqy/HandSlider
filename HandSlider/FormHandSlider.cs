@@ -68,9 +68,9 @@ namespace HandSlider
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //pictureBox1.SuspendLayout();
-            //pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
-            //pictureBox1.ResumeLayout();
+            pictureBox1.SuspendLayout();
+            pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            pictureBox1.ResumeLayout();
         }
 
         private void btnStart_Click(object sender, EventArgs e)

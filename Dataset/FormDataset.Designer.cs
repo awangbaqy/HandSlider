@@ -122,10 +122,10 @@
             // 
             // textBox1
             // 
-            this.textBox1.Enabled = false;
             this.textBox1.Location = new System.Drawing.Point(664, 159);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.textBox1.Size = new System.Drawing.Size(206, 354);
             this.textBox1.TabIndex = 11;
             // 
@@ -134,9 +134,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(664, 143);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 13);
+            this.label1.Size = new System.Drawing.Size(78, 13);
             this.label1.TabIndex = 13;
-            this.label1.Text = "Code :";
+            this.label1.Text = "Deretan Biner :";
             // 
             // FormDataset
             // 

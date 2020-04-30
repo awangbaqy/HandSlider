@@ -23,12 +23,13 @@ namespace Dataset
         Closing closingRadius10;
         Color c, c0, c1, c2, c3, c4, c5, c6, c7;
         GaborFilter gaborFilter;
-        Graphics graphics;
+        Graphics graphics, g;
         Grayscale grayscale;
         GrayscaleToRGB grayscaleToRGB;
         ImageAttributes imageAttributes;
         Median median;
         Opening opening;
+        Pen pen;
         Rectangle destinationRectangle;
         Threshold threshold;
         Timer moveTimer;
@@ -74,60 +75,65 @@ namespace Dataset
             binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
             closingRadius10 = new Closing(kernelShortRadius10);
-            destinationBitmap = new Bitmap(5, 5);
-            destinationRectangle = new Rectangle(0, 0, 5, 5);
+            destinationBitmap = new Bitmap(20, 20);
+            destinationRectangle = new Rectangle(0, 0, 20, 20);
             gaborFilter = new GaborFilter();
             grayscale = Grayscale.CommonAlgorithms.BT709;
             grayscaleToRGB = new GrayscaleToRGB();
             median = new Median();
             moveTimer = new Timer();
             opening = new Opening();
+            pen = new Pen(Color.Red);
             threshold = new Threshold(128);
             zhangSuenSkeletonization = new ZhangSuenSkeletonization();
         }
 
         private void FormDataset_Load(object sender, EventArgs e)
         {
-            //moveTimer.Interval = 1000;
-            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            //moveTimer.Start();
-            Console.WriteLine("ikuzo F");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Flat", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            moveTimer.Interval = 1500;
+            moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            moveTimer.Start();
 
-                pre_processing(image);
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Flat", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Flat\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            Console.WriteLine("S");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Spread", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            //    pre_processing(image);
 
-                pre_processing(image);
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Spread\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            Console.WriteLine("V");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Spread", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Ve\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            Console.WriteLine("chotto");
-            Close();
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
+
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Ve", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+            //    pre_processing(image);
+
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
+
+            //Close();
+
+            pictureBox3.SuspendLayout();
+            pictureBox3.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox3_Paint);
+            pictureBox3.ResumeLayout();
         }
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
         {
-            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Flat", "*.jpg");
+            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Ve", "*.jpg");
             System.Drawing.Image image = System.Drawing.Image.FromFile(images[counter]);
             pre_processing(image);
 
@@ -140,6 +146,20 @@ namespace Dataset
             else
             {
                 counter = 0;
+            }
+        }
+
+        private void pictureBox3_Paint(object sender, PaintEventArgs e)
+        {
+            if (pictureBox3.Image != null)
+            {
+                blobCounter.ProcessImage((Bitmap)pictureBox3.Image);
+                blobs = blobCounter.GetObjectsInformation();
+                g = e.Graphics;
+                foreach (Blob blob in blobs)
+                {
+                    g.DrawRectangle(pen, blob.Rectangle);
+                }
             }
         }
 
@@ -524,7 +544,7 @@ namespace Dataset
             }
             textBox1.Text = str;
 
-            Console.WriteLine(str);
+            //Console.WriteLine(str);
 
             //return resultBlobing;
         }
