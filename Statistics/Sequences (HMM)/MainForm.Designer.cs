@@ -365,9 +365,9 @@
             // 
             this.groupBox3.Controls.Add(this.dgvEmissions);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox3.Location = new System.Drawing.Point(217, 173);
+            this.groupBox3.Location = new System.Drawing.Point(210, 173);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(476, 164);
+            this.groupBox3.Size = new System.Drawing.Size(459, 164);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Emissions";
@@ -378,7 +378,7 @@
             this.dgvEmissions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvEmissions.Location = new System.Drawing.Point(3, 16);
             this.dgvEmissions.Name = "dgvEmissions";
-            this.dgvEmissions.Size = new System.Drawing.Size(470, 145);
+            this.dgvEmissions.Size = new System.Drawing.Size(453, 145);
             this.dgvEmissions.TabIndex = 1;
             // 
             // groupBox7
@@ -391,10 +391,10 @@
             this.groupBox7.Controls.Add(this.button2);
             this.groupBox7.Controls.Add(this.rbStopConvergence);
             this.groupBox7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox7.Location = new System.Drawing.Point(699, 3);
+            this.groupBox7.Location = new System.Drawing.Point(675, 3);
             this.groupBox7.Name = "groupBox7";
             this.tableLayoutPanel1.SetRowSpan(this.groupBox7, 3);
-            this.groupBox7.Size = new System.Drawing.Size(197, 437);
+            this.groupBox7.Size = new System.Drawing.Size(221, 437);
             this.groupBox7.TabIndex = 6;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Training";
@@ -464,7 +464,7 @@
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(27, 409);
+            this.button2.Location = new System.Drawing.Point(51, 409);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(165, 23);
             this.button2.TabIndex = 1;
@@ -487,9 +487,9 @@
             // 
             this.groupBox2.Controls.Add(this.dgvTransitions);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(217, 3);
+            this.groupBox2.Location = new System.Drawing.Point(210, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(476, 164);
+            this.groupBox2.Size = new System.Drawing.Size(459, 164);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Transitions";
@@ -500,7 +500,7 @@
             this.dgvTransitions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvTransitions.Location = new System.Drawing.Point(3, 16);
             this.dgvTransitions.Name = "dgvTransitions";
-            this.dgvTransitions.Size = new System.Drawing.Size(470, 145);
+            this.dgvTransitions.Size = new System.Drawing.Size(453, 145);
             this.dgvTransitions.TabIndex = 1;
             // 
             // groupBox4
@@ -510,7 +510,7 @@
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox4.Location = new System.Drawing.Point(3, 343);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(690, 97);
+            this.groupBox4.Size = new System.Drawing.Size(666, 97);
             this.groupBox4.TabIndex = 0;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "State Probabilities";
@@ -521,7 +521,7 @@
             this.dgvProbabilities.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvProbabilities.Location = new System.Drawing.Point(3, 16);
             this.dgvProbabilities.Name = "dgvProbabilities";
-            this.dgvProbabilities.Size = new System.Drawing.Size(684, 78);
+            this.dgvProbabilities.Size = new System.Drawing.Size(660, 78);
             this.dgvProbabilities.TabIndex = 1;
             // 
             // groupBox1
@@ -531,7 +531,7 @@
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
             this.tableLayoutPanel1.SetRowSpan(this.groupBox1, 2);
-            this.groupBox1.Size = new System.Drawing.Size(208, 334);
+            this.groupBox1.Size = new System.Drawing.Size(201, 334);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Models";
@@ -546,7 +546,7 @@
             this.dgvModels.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvModels.Location = new System.Drawing.Point(3, 16);
             this.dgvModels.Name = "dgvModels";
-            this.dgvModels.Size = new System.Drawing.Size(202, 315);
+            this.dgvModels.Size = new System.Drawing.Size(195, 315);
             this.dgvModels.TabIndex = 1;
             this.dgvModels.CurrentCellChanged += new System.EventHandler(this.dgvModels_CurrentCellChanged);
             // 

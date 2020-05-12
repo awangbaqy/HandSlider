@@ -1,5 +1,8 @@
 ﻿using Accord.Imaging;
 using Accord.Imaging.Filters;
+using Accord.Math;
+using Accord.Statistics.Models.Markov;
+using Accord.Statistics.Models.Markov.Learning;
 using Accord.Video;
 using Accord.Video.DirectShow;
 using System;
@@ -9,6 +12,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace HandSlider
@@ -17,73 +21,221 @@ namespace HandSlider
     {
         BinaryDilation3x3 binaryDilation3x3;
         BinaryErosion3x3 binaryErosion3x3;
-        Bitmap frame, frame2, bit3, destImage;
+        Bitmap bitmapBlob, destImage, destinationBitmapBlob, frame, frameBlobs;
         BitmapData bitmapData;
         BlobCounter blobCounter;
         Blob[] blobs;
-        Color color, c;
-        Dictionary<int, double> histoR;
-        Dictionary<int, double> histoG;
-        Dictionary<int, double> histoB;
         Dilation dilation;
         FilterInfoCollection fic;
-        Graphics graphics, g;
-        Grayscale grayscale;
-        ImageAttributes wrapMode;
+        Graphics graphics, graphicsBlob, g;
+        HiddenMarkovClassifier hmmc;
+        ImageAttributes imageAttributesBlob, wrapMode;
+        List<int> sequenceCodeList;
         Median median;
         Opening opening;
-        Pen rectPen;
-        Rectangle destRect;
-        Threshold t;
+        Pen penRed, penGreen, penBlue;
+        Rectangle destRect, destinationRectangleBlob;
+        Thread thread;
+        Threshold threshold;
+        System.Timers.Timer timerMovement, timerLabel, timerFrame, timerFPS;
         VideoCaptureDevice vcd;
-        
-        bool skin;
+
+        bool getFrame, detected;
         byte[] pixels;
-        double hue, saturation, value;
-        double ye, cebe, ceer;
-        int i, j, max, min;
-        int bytesPerPixel, byteCount, heightInPixels, widthInBytes, y, x, currentLine;
+        double ye, cebe, ceer, ratio;
+        int actual;
+        int b, i, j, x, y;
+        int bytesPerPixel, byteCount, heightInPixels, widthInBytes, currentLine;
         int oldBlue, oldGreen, oldRed;
+        int pointX, pointX1, pointX2, handWidth;
+        int fps, timerElapsed, timerInterval;
+        int[] sequenceBlob;
+        string hand, label;
 
         public FormHandSlider()
         {
             InitializeComponent();
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.DoubleBuffer | ControlStyles.UserPaint, true);
+            //SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw | ControlStyles.DoubleBuffer | ControlStyles.UserPaint, true);
 
             destImage = new Bitmap(480, 360);
+            destinationBitmapBlob = new Bitmap(20, 20);
             binaryDilation3x3 = new BinaryDilation3x3();
             binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
-            histoR = new Dictionary<int, double>();
-            histoG = new Dictionary<int, double>();
-            histoB = new Dictionary<int, double>();
+            destinationRectangleBlob = new Rectangle(0, 0, 20, 20);
+            destRect = new Rectangle(0, 0, 480, 360);
             dilation = new Dilation();
-            grayscale = Grayscale.CommonAlgorithms.BT709;
             median = new Median();
             opening = new Opening(new short[3, 3]);
-            rectPen = new Pen(Color.Blue);
-            destRect = new Rectangle(0, 0, 480, 360);
-            t = new Threshold();
+            penGreen = new Pen(Color.Green);
+            penRed = new Pen(Color.Red);
+            penBlue = new Pen(Color.Blue);
+            sequenceBlob = new int[400];
+            threshold = new Threshold(128);
+            thread = new Thread(datasetTraining);
+            timerMovement = new System.Timers.Timer(1500); // movement duration
+            timerLabel = new System.Timers.Timer(500);
+            timerFrame = new System.Timers.Timer(100); // 10 fps
+            timerFPS = new System.Timers.Timer(1000); // check FPS
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        // Events
+
+        private void FormHandSlider_Load(object sender, EventArgs e)
         {
+            blobCounter.CoupledSizeFiltering = true;
+            blobCounter.FilterBlobs = true;
+
+            // vertical rectangle
+            //blobCounter.MinHeight = 50;
+            //blobCounter.MaxHeight = 60;
+            //blobCounter.MinWidth = 40;
+            //blobCounter.MaxWidth = 50;
+
+            // horizontal rectangle
+            //blobCounter.MinHeight = 40;
+            //blobCounter.MaxHeight = 50;
+            //blobCounter.MinWidth = 50;
+            //blobCounter.MaxWidth = 60;
+
+            // vertical rectangle // need research
+            //blobCounter.MinHeight = 50;
+            //blobCounter.MaxHeight = 140;
+            //blobCounter.MinWidth = 30;
+            //blobCounter.MaxWidth = 70;
+
+            // horizontal rectangle
+            blobCounter.MinHeight = 16;
+            //blobCounter.MaxHeight = 70;
+            blobCounter.MinWidth = 16;
+            //blobCounter.MaxWidth = 140;
+
+            getFrame = true;
+
+            hand = "RIGHT";
+
             pictureBox1.SuspendLayout();
-            pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            pictureBox1.Paint += new PaintEventHandler(pictureBox1_Paint);
             pictureBox1.ResumeLayout();
+
+            timerFPS.Elapsed += TimerFPS_Elapsed;
+            timerFPS.AutoReset = true;
+
+            timerLabel.Elapsed += TimerLabel_Elapsed;
+            timerLabel.AutoReset = true;
+            timerLabel.Enabled = true;
+
+            timerMovement.Elapsed += TimerMovement_Elapsed;
+            timerInterval = Convert.ToInt16(timerMovement.Interval);
+
+            // GUI
+            btnStart.Enabled = false;
+
+            rbOriginal.Enabled = false;
+            rbThreshold.Enabled = false;
+            rbMorphology.Enabled = false;
+            rbBlobDetection.Enabled = false;
+            cbMoveDetection.Enabled = false;
+
+            btnStop.Enabled = false;
+
+            label1.Visible = true;
+            
+            // Training
+            thread.Start();
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
+            label1.Visible = false;
+
+            btnStart.Enabled = false;
+            
+            rbOriginal.Enabled = true;
+            rbThreshold.Enabled = true;
+            rbMorphology.Enabled = true;
+            rbBlobDetection.Enabled = true;
+            cbMoveDetection.Enabled = true;
+
+            btnStop.Enabled = true;
+
+            timerFPS.Enabled = true;
+
+            timerFrame.Elapsed += TimerFrame_Elapsed;
+            timerFrame.AutoReset = true;
+            timerFrame.Enabled = true;
+
             fic = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             vcd = new VideoCaptureDevice(fic[0].MonikerString);
             vcd.NewFrame += new NewFrameEventHandler(newFrame);
             vcd.Start();
         }
 
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            DialogResult dialogResult = MessageBox.Show("Berhenti merekam?", "Perhatian", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (dialogResult == DialogResult.Yes)
+            {
+                vcd.NewFrame -= new NewFrameEventHandler(newFrame);
+                vcd.Stop();
+                vcd.SignalToStop();
+
+                btnStart.Enabled = true;
+
+                rbOriginal.Enabled = false;
+                rbThreshold.Enabled = false;
+                rbMorphology.Enabled = false;
+                rbBlobDetection.Enabled = false;
+                cbMoveDetection.Enabled = false;
+
+                btnStop.Enabled = false;
+
+                pointX1 = pointX2 = 0;
+                pictureBox1.Image = null;
+                label1.Visible = true;
+
+                timerFPS.Enabled = false;
+                timerFrame.Enabled = false;
+
+                statusLabelFPS.Text = "0 FPS";
+                statusProgressBar1.Value = 0;
+            }
+        }
+
+        private void cbMoveDetection_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbMoveDetection.Checked)
+            {
+                rbOriginal.Enabled = false;
+                rbThreshold.Enabled = false;
+                rbMorphology.Enabled = false;
+                rbBlobDetection.Enabled = false;
+            }
+            else
+            {
+                rbOriginal.Enabled = true;
+                rbThreshold.Enabled = true;
+                rbMorphology.Enabled = true;
+                rbBlobDetection.Enabled = true;
+            }
+        }
+
+        private void FormHandSlider_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (vcd == null) { return; }
+            
+            vcd.NewFrame -= new NewFrameEventHandler(newFrame);
+            vcd.Stop();
+            vcd.SignalToStop();
+            
+        }
+
         private void newFrame(object sender, NewFrameEventArgs eventArgs)
         {
+            if (!getFrame) { return; }
+            
             frame = resizing(eventArgs.Frame);
+            frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
 
             if (rbOriginal.Checked)
             {
@@ -102,7 +254,7 @@ namespace HandSlider
                     pictureBox1.Image = frame.Clone() as Bitmap;
                 }
             }
-            
+
             frame = morphologing(frame.Clone() as Bitmap);
 
             if (rbMorphology.Checked)
@@ -113,115 +265,217 @@ namespace HandSlider
                 }
             }
 
-            if (rbBlobOfHand.Checked)
+            if (rbBlobDetection.Checked)
             {
                 lock (pictureBox1)
                 {
-                    pictureBox1.Image = null;
+                    pictureBox1.Image = frame.Clone() as Bitmap;
                 }
             }
 
-            if (rbCenterPoint.Checked)
-            {
-                lock (pictureBox1)
-                {
-                    pictureBox1.Image = null;
-                }
-            }
+            getFrame = false;
+            
+            fps += 1;
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            if (bit3 != null)
-            {
-                frame2 = Accord.Imaging.Image.Clone(bit3.Clone() as Bitmap, PixelFormat.Format24bppRgb);
-                blobCounter.ProcessImage(frame2);
-                blobs = blobCounter.GetObjectsInformation();
-                g = e.Graphics;
+            if (frame == null) { return; }
 
-                foreach (Blob blob in blobs)
+            frameBlobs = frame.Clone() as Bitmap;
+            blobCounter.ProcessImage(frameBlobs);
+            blobs = blobCounter.GetObjectsInformation();
+            g = e.Graphics;
+            pictureBoxBlob.Image = null;
+
+            for (b = 0; b < blobs.Length; b++)
+            {
+                blobCounter.ExtractBlobsImage(frameBlobs, blobs[b], false);
+                
+                bitmapBlob = blobs[b].Image.ToManagedImage();
+
+                //ratio = Convert.ToDouble(bitmapBlob.Height) / Convert.ToDouble(bitmapBlob.Width); // vertical horizontal
+                ratio = Convert.ToDouble(bitmapBlob.Width) / Convert.ToDouble(bitmapBlob.Height);
+
+                //if (ratio < 1.31159 || 1.68420 < ratio ) { continue; } // average from dataset
+                //if (ratio < 0.58392 || 3.29167 < ratio) { continue; } // min max from dataset
+                if (ratio < 0.72895 || 2.57129 < ratio) { continue; } // average from min max of dataset
+
+                pointX = Convert.ToInt16(blobs[b].CenterOfGravity.X);
+
+                if (pointX <= (frameBlobs.Width / 2)) 
                 {
-                    g.DrawRectangle(rectPen, blob.Rectangle);
+                    bitmapBlob.RotateFlip(RotateFlipType.Rotate90FlipNone); // left-handed
+                    hand = "LEFT";
+                }
+                else
+                {
+                    bitmapBlob.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    hand = "RIGHT";
                 }
 
-                if (blobs != null && blobs.Length != 0)
+                //if (findVe()) { continue; }
+
+                sequenceBlob = code(threshold.Apply(Grayscale.CommonAlgorithms.BT709.Apply(resizingBlob(bitmapBlob))));
+                label = getHandLabel(sequenceBlob);
+
+                if (rbBlobDetection.Checked && label.Equals("F"))
                 {
-                    blobCounter.ExtractBlobsImage(frame2, blobs[0], true);
+                    g.DrawRectangle(penRed, blobs[b].Rectangle);
+                }
+                else if (rbBlobDetection.Checked && label.Equals("S"))
+                {
+                    g.DrawRectangle(penGreen, blobs[b].Rectangle);
+                }
+                else if (rbBlobDetection.Checked && label.Equals("V"))
+                {
+                    g.DrawRectangle(penBlue, blobs[b].Rectangle);
+                    pictureBoxBlob.Image = bitmapBlob;
+                }
 
-                    pictureBox1.Image = blobs[0].Image.ToManagedImage();
-
-                    pictureBox1.Image = new ExtractBiggestBlob().Apply(frame2);
+                if (cbMoveDetection.Checked && label.Equals("V"))
+                {
+                    moving(pointX, bitmapBlob.Height);
                 }
             }
+            
+            //throw new NotImplementedException();
+        }
 
-            //pictureBox3.Image = new Bitmap(320, 240, g);
+        private void TimerLabel_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Invoke(new Action(() => {
+
+                if (label1.Text == "Menyiapkan Dataset")
+                {
+                    label1.Text = "Menyiapkan Dataset.";
+                }
+                else if (label1.Text == "Menyiapkan Dataset.")
+                {
+                    label1.Text = "Menyiapkan Dataset..";
+                }
+                else if (label1.Text == "Menyiapkan Dataset..")
+                {
+                    label1.Text = "Menyiapkan Dataset...";
+                }
+                else if (label1.Text == "Menyiapkan Dataset...")
+                {
+                    label1.Text = "Menyiapkan Dataset";
+                }
+
+            }));
 
             //throw new NotImplementedException();
         }
 
-        private Bitmap he(Bitmap bit)
+        private void TimerMovement_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            List<string> l1 = new List<string>();
-            List<string> l2 = new List<string>();
+            pointX1 = pointX2 = 0;
+            timerMovement.Stop();
 
-            //Proses inisiasi nilai awal pixel 0 - 255 diset bernilai 0
-            for (int counter = 0; counter <= 255; counter++)
+            Invoke(new Action(() => {
+
+                labelX1.Text = ": " + pointX1.ToString();
+                labelX2.Text = ": " + pointX2.ToString();
+                labelMovement.Text = "NETRAL";
+
+            }));
+
+            //throw new NotImplementedException();
+        }
+
+        private void TimerFPS_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Invoke(new Action(() => {
+                statusLabelFPS.Text = fps + " FPS";
+            }));
+            fps = 0;
+
+            //throw new NotImplementedException();
+        }
+
+        private void TimerFrame_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            getFrame = true;
+
+            if (detected)
             {
-                histoR[counter] = 0;
-                histoG[counter] = 0;
-                histoB[counter] = 0;
+                timerElapsed = timerElapsed >= timerInterval ? 0 : timerElapsed + 100;
+            }
+            else
+            {
+                timerElapsed = 0;
             }
 
-            //Untuk tiap baris dan kolom citra, nilai histogram ditambahkan
-            for (int i = 0; i < bit.Width; i++)
-            {
-                for (int j = 0; j < bit.Height; j++)
+            Invoke(new Action(() => {
+
+                if (hand.Equals("RIGHT"))
                 {
-                    c = bit.GetPixel(i, j);
+                    statusProgressBar1.RightToLeft = RightToLeft.Yes;
+                    statusProgressBar1.RightToLeftLayout = true;
+                }
+                else
+                {
+                    statusProgressBar1.RightToLeft = RightToLeft.No;
+                    statusProgressBar1.RightToLeftLayout = false;
+                }
 
-                    histoR[c.R] += 1;
-                    histoG[c.G] += 1;
-                    histoB[c.B] += 1; //kerja histogram
+                statusProgressBar1.Value = (timerElapsed * 100) / timerInterval;
 
-                    l1.Add("R " + c.R + "; G " + c.G + "; B " + c.B + ";");
+            }));
+
+            //throw new NotImplementedException();
+        }
+
+        // Functions | Methods
+
+        private Bitmap morphologing(Bitmap bitmap)
+        {
+            return median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(Grayscale.CommonAlgorithms.BT709.Apply(bitmap))));
+        }
+
+        private Bitmap resizing(Bitmap bitmap)
+        {
+            destImage.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
+
+            using (graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(bitmap, destRect, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, wrapMode);
                 }
             }
 
-            //Proses menghitung nilai transform function,
-            double[] transformR = new double[256];
-            double[] transformG = new double[256];
-            double[] transformB = new double[256];
-            double jumlahR, jumlahG, jumlahB;
-            jumlahR = jumlahG = jumlahB = 0;
+            return destImage;
+        }
+        
+        private Bitmap resizingBlob(Bitmap bitmap)
+        {
+            destinationBitmapBlob.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
 
-            foreach (int i in histoR.Keys.ToList())
+            using (graphicsBlob = Graphics.FromImage(destinationBitmapBlob))
             {
-                jumlahR += 255 * (histoR[i] / (bit.Width * bit.Height));
-                transformR[i] = jumlahR;
+                graphicsBlob.CompositingMode = CompositingMode.SourceCopy;
+                graphicsBlob.CompositingQuality = CompositingQuality.HighQuality;
+                graphicsBlob.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphicsBlob.SmoothingMode = SmoothingMode.HighQuality;
+                graphicsBlob.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                jumlahG += 255 * (histoG[i] / (bit.Width * bit.Height));
-                transformG[i] = jumlahG;
-
-                jumlahB += 255 * (histoB[i] / (bit.Width * bit.Height));
-                transformB[i] = jumlahB;
-            }
-
-            //Proses mengubah nilai pixel ke nilai baru sesuai transform function
-            for (int i = 0; i < bit.Width; i++)
-            {
-                for (int j = 0; j < bit.Height; j++)
+                using (imageAttributesBlob = new ImageAttributes())
                 {
-                    c = bit.GetPixel(i, j);
-
-                    //r = Convert.ToInt16(transformR[c.R]);
-                    //g = Convert.ToInt16(transformG[c.G]);
-                    //b = Convert.ToInt16(transformB[c.B]);
-
-                    //bit.SetPixel(i, j, Color.FromArgb(r, g, b));
+                    imageAttributesBlob.SetWrapMode(WrapMode.TileFlipXY);
+                    graphicsBlob.DrawImage(bitmap, destinationRectangleBlob, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, imageAttributesBlob);
                 }
             }
 
-            return bit;
+            return destinationBitmapBlob;
         }
 
         private Bitmap thresholding(Bitmap bitmap)
@@ -240,8 +494,6 @@ namespace HandSlider
                 currentLine = y * bitmapData.Stride;
                 for (x = 0; x < widthInBytes; x = x + bytesPerPixel)
                 {
-                    skin = false;
-
                     oldBlue = pixels[currentLine + x];
                     oldGreen = pixels[currentLine + x + 1];
                     oldRed = pixels[currentLine + x + 2];
@@ -270,238 +522,242 @@ namespace HandSlider
 
             return bitmap;
         }
+
+        //private bool findVe()
+        //{
+        //    sequenceBlob = code(threshold.Apply(Grayscale.CommonAlgorithms.BT709.Apply(resizingBlob(bitmapBlob))));
+
+        //    if (!getHandLabel(sequenceBlob).Equals("V")) { return false; }
+
+        //    if (rbBlobDetection.Checked)
+        //    {
+        //        g.DrawRectangle(penBlue, blobs[b].Rectangle);
+
+        //        pictureBoxBlob.Image = bitmapBlob;
+        //    }
+
+        //    if (cbMoveDetection.Checked)
+        //    {
+        //        moving(Convert.ToInt16(blobs[b].CenterOfGravity.X));
+        //    }
+
+        //    return true;
+        //}
+
+        private int[] code(Bitmap bitmap)
+        {
+            sequenceCodeList = new List<int>(400);
+
+            for (i = 0; i < bitmap.Height; i++)
+            {
+                for (j = 0; j < bitmap.Width; j++)
+                {
+                    if (bitmap.GetPixel(i, j).R == 0)
+                    {
+                        sequenceCodeList.Add(0);
+                    }
+                    else
+                    {
+                        sequenceCodeList.Add(1);
+                    }
+                }
+            }
+
+            return sequenceCodeList.ToArray();
+        }
+
+        private string getHandLabel(int[] seq)
+        {
+            hmmc.LogLikelihood(seq, out actual);
+
+            return hmmc.Models[actual].Tag as string;
+        }
         
-        private Bitmap resizing(Bitmap bitmap)
+        private void moving(int xCoordinate, int width)
         {
-            destImage.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
-
-            using (graphics = Graphics.FromImage(destImage))
+            if (pointX1 == 0 && handWidth == 0)
             {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                pointX1 = xCoordinate;
+                timerMovement.Start();
+                detected = true;
+                handWidth = width;
+            }
+            else
+            {
+                pointX2 = xCoordinate;
 
-                using (wrapMode = new ImageAttributes())
+                if (hand.Equals("RIGHT") && pointX1 - pointX2 < -handWidth)
                 {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(bitmap, destRect, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, wrapMode);
+                    SendKeys.Send("{LEFT}");
+                    labelMovement.Text = "KIRI";
+
+                    timerMovement.Stop();
+                    pointX1 = pointX2 = 0;
+                    detected = false;                    
+                }
+                else if (hand.Equals("LEFT") && pointX1 - pointX2 > handWidth)
+                {
+                    SendKeys.Send("{RIGHT}");
+                    labelMovement.Text = "KANAN";
+
+                    timerMovement.Stop();
+                    pointX1 = pointX2 = 0;
+                    detected = false;
+                    hand = "RIGHT";
                 }
             }
 
-            return destImage;
+            labelX1.Text = ": " + pointX1.ToString();
+            labelX2.Text = ": " + pointX2.ToString();
         }
+        
+        // Dataset
 
-        private Bitmap morphologing(Bitmap bitmap)
+        private void datasetTesting()
         {
-            return median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(grayscale.Apply(bitmap))));
-        }
+            int wrong_total, right_total, f_total, ff, fs, fv, s_total, sf, ss, sv, v_total, vf, vs, vv;
+            wrong_total = right_total = f_total = ff = fs = fv = s_total = sf = ss = sv = v_total = vf = vs = vv = 0;
 
-        private Bitmap OpenMorphologyFilter(Bitmap sourceBitmap, int matrixSize, bool applyBlue = true, bool applyGreen = true, bool applyRed = true)
-        {
-            Bitmap resultBitmap = DilateAndErodeFilter( sourceBitmap,
-                                matrixSize, "Erosion",
-                                applyBlue, applyGreen, applyRed);
+            int[] expected = new int[51];
+            int[] actual = new int[51];
 
-
-            resultBitmap = DilateAndErodeFilter( sourceBitmap,
-                               matrixSize,
-                               "Dilation",
-                               applyBlue, applyGreen, applyRed);
-
-
-            return resultBitmap;
-        }
-
-        private Bitmap DilateAndErodeFilter(Bitmap sourceBitmap, int matrixSize, string morphType, bool applyBlue = true, bool applyGreen = true,bool applyRed = true)
-        {
-            BitmapData sourceData =
-                       sourceBitmap.LockBits(new Rectangle(0, 0,
-                       sourceBitmap.Width, sourceBitmap.Height),
-                       ImageLockMode.ReadOnly,
-                       PixelFormat.Format32bppArgb);
-
-
-            byte[] pixelBuffer = new byte[sourceData.Stride *
-                                          sourceData.Height];
-
-
-            byte[] resultBuffer = new byte[sourceData.Stride *
-                                           sourceData.Height];
-
-
-            Marshal.Copy(sourceData.Scan0, pixelBuffer, 0,
-                                       pixelBuffer.Length);
-
-
-            sourceBitmap.UnlockBits(sourceData);
-
-
-            int filterOffset = (matrixSize - 1) / 2;
-            int calcOffset = 0;
-
-
-            int byteOffset = 0;
-
-
-            byte blue = 0;
-            byte green = 0;
-            byte red = 0;
-
-
-            byte morphResetValue = 0;
-
-
-            if (morphType == "Erosion")
+            for (int i = 0; i < 51; i++)
             {
-                morphResetValue = 255;
-            }
+                expected[i] = hmmc.Models.Find(x => x.Tag as string == Dataset.labelsTesting[i])[0];
 
+                hmmc.LogLikelihood(Dataset.sequencesTesting[i], out actual[i]);
 
-            for (int offsetY = filterOffset; offsetY <
-                sourceBitmap.Height - filterOffset; offsetY++)
-            {
-                for (int offsetX = filterOffset; offsetX <
-                    sourceBitmap.Width - filterOffset; offsetX++)
+                if (actual[i] == expected[i]) { right_total += 1; }
+                if (actual[i] != expected[i]) { wrong_total += 1; }
+
+                string expect = hmmc.Models[actual[i]].Tag as string;
+
+                if (Dataset.labelsTesting[i].Equals("F"))
                 {
-                    byteOffset = offsetY *
-                                 sourceData.Stride +
-                                 offsetX * 4;
+                    f_total += 1;
+                    if (expect.Equals("F")) { ff += 1; }
+                    if (expect.Equals("S")) { fs += 1; }
+                    if (expect.Equals("V")) { fv += 1; }
+                }
 
+                if (Dataset.labelsTesting[i].Equals("S"))
+                {
+                    s_total += 1;
+                    if (expect.Equals("F")) { sf += 1; }
+                    if (expect.Equals("S")) { ss += 1; }
+                    if (expect.Equals("V")) { sv += 1; }
+                }
 
-                    blue = morphResetValue;
-                    green = morphResetValue;
-                    red = morphResetValue;
-
-
-                    if (morphType == "Dilation")
-                    {
-                        for (int filterY = -filterOffset;
-                            filterY <= filterOffset; filterY++)
-                        {
-                            for (int filterX = -filterOffset;
-                                filterX <= filterOffset; filterX++)
-                            {
-                                calcOffset = byteOffset +
-                                             (filterX * 4) +
-                                (filterY * sourceData.Stride);
-
-
-                                if (pixelBuffer[calcOffset] > blue)
-                                {
-                                    blue = pixelBuffer[calcOffset];
-                                }
-
-
-                                if (pixelBuffer[calcOffset + 1] > green)
-                                {
-                                    green = pixelBuffer[calcOffset + 1];
-                                }
-
-
-                                if (pixelBuffer[calcOffset + 2] > red)
-                                {
-                                    red = pixelBuffer[calcOffset + 2];
-                                }
-                            }
-                        }
-                    }
-                    else if (morphType == "Erosion")
-                    {
-                        for (int filterY = -filterOffset;
-                            filterY <= filterOffset; filterY++)
-                        {
-                            for (int filterX = -filterOffset;
-                                filterX <= filterOffset; filterX++)
-                            {
-                                calcOffset = byteOffset +
-                                             (filterX * 4) +
-                                (filterY * sourceData.Stride);
-
-
-                                if (pixelBuffer[calcOffset] < blue)
-                                {
-                                    blue = pixelBuffer[calcOffset];
-                                }
-
-
-                                if (pixelBuffer[calcOffset + 1] < green)
-                                {
-                                    green = pixelBuffer[calcOffset + 1];
-                                }
-
-
-                                if (pixelBuffer[calcOffset + 2] < red)
-                                {
-                                    red = pixelBuffer[calcOffset + 2];
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (applyBlue == false)
-                    {
-                        blue = pixelBuffer[byteOffset];
-                    }
-
-
-                    if (applyGreen == false)
-                    {
-                        green = pixelBuffer[byteOffset + 1];
-                    }
-
-
-                    if (applyRed == false)
-                    {
-                        red = pixelBuffer[byteOffset + 2];
-                    }
-
-
-                    resultBuffer[byteOffset] = blue;
-                    resultBuffer[byteOffset + 1] = green;
-                    resultBuffer[byteOffset + 2] = red;
-                    resultBuffer[byteOffset + 3] = 255;
+                if (Dataset.labelsTesting[i].Equals("V"))
+                {
+                    v_total += 1;
+                    if (expect.Equals("F")) { vf += 1; }
+                    if (expect.Equals("S")) { vs += 1; }
+                    if (expect.Equals("V")) { vv += 1; }
                 }
             }
 
-
-            Bitmap resultBitmap = new Bitmap(sourceBitmap.Width,
-                                             sourceBitmap.Height);
-
-
-            BitmapData resultData =
-                       resultBitmap.LockBits(new Rectangle(0, 0,
-                       resultBitmap.Width, resultBitmap.Height),
-                       ImageLockMode.WriteOnly,
-                       PixelFormat.Format32bppArgb);
-
-
-            Marshal.Copy(resultBuffer, 0, resultData.Scan0,
-                                       resultBuffer.Length);
-
-
-            resultBitmap.UnlockBits(resultData);
-
-
-            return resultBitmap;
+            MessageBox.Show(
+                    "benar = " + right_total + " salah = " + wrong_total + "\n" +
+                    "-===- \n" +
+                    "F = " + f_total + " > F = " + ff + " / S = " + fs + " / V = " + fv + "\n" +
+                    "S = " + s_total + " > F = " + sf + " / S = " + ss + " / V = " + sv + "\n" +
+                    "V = " + v_total + " > F = " + vf + " / S = " + vs + " / V = " + vv
+                );
         }
 
-        private void btnStop_Click(object sender, EventArgs e)
+        private void datasetTraining()
         {
-            vcd.NewFrame -= new NewFrameEventHandler(newFrame);
-            vcd.Stop();
-            vcd.SignalToStop();
-        }
+            int classes = 3;
+            string[] categories = { "F", "S", "V" };
+            int[] states = { 2, 2, 2 };
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (vcd != null)
+            hmmc = new HiddenMarkovClassifier(classes, states, 3, categories);
+
+            int iterations = 100;
+            double limit = 0;
+
+            var teacher = new HiddenMarkovClassifierLearning(hmmc, i =>
             {
-                vcd.NewFrame -= new NewFrameEventHandler(newFrame);
-                vcd.Stop();
-                vcd.SignalToStop();
+                return new BaumWelchLearning(hmmc.Models[i])
+                {
+                    MaxIterations = iterations,
+                    Tolerance = limit
+                };
+            });
+
+            teacher.Learn(Dataset.sequencesTraining, Dataset.labelsTraining);
+
+            //getHMMC();
+
+            //datasetTesting();
+
+            timerLabel.Stop();
+            timerLabel.Dispose();
+
+            Invoke(new Action(() => {
+
+                btnStart.Enabled = true;
+
+                label1.Text = "Aplikasi Siap!";
+
+            }));
+        }
+
+        private void getHMMC()
+        {
+            Console.WriteLine("Number Of Classes : " + hmmc.NumberOfClasses);
+            Console.WriteLine("Number Of Inputs : " + hmmc.NumberOfInputs);
+            Console.WriteLine("Number Of Outputs : " + hmmc.NumberOfOutputs);
+            Console.WriteLine("Sensitivity : " + hmmc.Sensitivity.ToString("F99").TrimEnd('0'));
+            Console.WriteLine("Threshold : " + hmmc.Threshold);
+
+            Console.WriteLine();
+
+            for (int i = 0; i < hmmc.Models.Length; i++)
+            {
+                Console.WriteLine("Class : ", hmmc.Models[i].Tag as string);
+
+                Console.WriteLine("Algorithm : " + hmmc.Models[i].Algorithm);
+                Console.WriteLine("Number Of Classes : " + hmmc.Models[i].NumberOfClasses);
+                Console.WriteLine("Number Of Inputs : " + hmmc.Models[i].NumberOfInputs);
+                Console.WriteLine("Number Of Outputs : " + hmmc.Models[i].NumberOfOutputs);
+
+                Console.WriteLine();
+                Console.WriteLine("Initial : ");
+
+                for (int j = 0; j < hmmc.Models[i].LogInitial.Length; j++)
+                {
+                    Console.WriteLine(hmmc.Models[i].LogInitial[j].ToString("F99").TrimEnd('0'));
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Emissions : ");
+
+                for (int j = 0; j < hmmc.Models[i].LogEmissions.Length; j++)
+                {
+                    Console.WriteLine("Baris : " + j);
+
+                    for (int k = 0; k < hmmc.Models[i].LogEmissions[j].Length; k++)
+                    {
+                        Console.WriteLine(hmmc.Models[i].LogEmissions[j][k]);
+                    }
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Transitions : ");
+
+                for (int j = 0; j < hmmc.Models[i].LogTransitions.Length; j++)
+                {
+                    Console.WriteLine("Baris : " + j);
+
+                    for (int k = 0; k < hmmc.Models[i].LogTransitions[j].Length; k++)
+                    {
+                        Console.WriteLine(hmmc.Models[i].LogTransitions[j][k]);
+                    }
+                }
+
+                Console.WriteLine();
             }
         }
     }
