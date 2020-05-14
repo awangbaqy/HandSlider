@@ -44,7 +44,7 @@
             this.cbMoveDetection = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.labelMovement = new System.Windows.Forms.Label();
+            this.labelCountdown = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabelFPS = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
@@ -203,15 +203,15 @@
             this.label3.TabIndex = 15;
             this.label3.Text = "Titik Awal (X1)";
             // 
-            // labelMovement
+            // labelCountdown
             // 
-            this.labelMovement.Font = new System.Drawing.Font("Microsoft Sans Serif", 17F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMovement.Location = new System.Drawing.Point(597, 90);
-            this.labelMovement.Name = "labelMovement";
-            this.labelMovement.Size = new System.Drawing.Size(120, 166);
-            this.labelMovement.TabIndex = 17;
-            this.labelMovement.Text = "NETRAL";
-            this.labelMovement.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdown.Location = new System.Drawing.Point(600, 119);
+            this.labelCountdown.Name = "labelCountdown";
+            this.labelCountdown.Size = new System.Drawing.Size(100, 100);
+            this.labelCountdown.TabIndex = 17;
+            this.labelCountdown.Text = "0";
+            this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // statusStrip1
             // 
@@ -240,7 +240,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(724, 401);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.labelMovement);
+            this.Controls.Add(this.labelCountdown);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbMoveDetection);
@@ -288,7 +288,7 @@
         private System.Windows.Forms.CheckBox cbMoveDetection;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label labelMovement;
+        private System.Windows.Forms.Label labelCountdown;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusLabelFPS;
         private System.Windows.Forms.ToolStripProgressBar statusProgressBar1;
