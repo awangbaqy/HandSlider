@@ -313,7 +313,7 @@ namespace HandSlider
                 labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Underline);
                 labelCountdown.ForeColor = Color.Blue;
 
-                labelCountdown.Text = Math.Floor((double)(duration - durationElapsed) * 5 / duration).ToString();
+                labelCountdown.Text = Math.Ceiling((double)(duration - durationElapsed) * 5 / duration).ToString();
             }
             else if (durationElapsed == 0)
             {
