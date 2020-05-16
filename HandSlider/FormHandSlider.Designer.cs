@@ -56,9 +56,9 @@
             // btnStart
             // 
             this.btnStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStart.Location = new System.Drawing.Point(12, 12);
+            this.btnStart.Location = new System.Drawing.Point(498, 12);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(90, 50);
+            this.btnStart.Size = new System.Drawing.Size(100, 35);
             this.btnStart.TabIndex = 1;
             this.btnStart.Text = "Mulai";
             this.btnStart.UseVisualStyleBackColor = true;
@@ -67,9 +67,9 @@
             // btnStop
             // 
             this.btnStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(12, 322);
+            this.btnStop.Location = new System.Drawing.Point(497, 360);
             this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(90, 50);
+            this.btnStop.Size = new System.Drawing.Size(100, 35);
             this.btnStop.TabIndex = 2;
             this.btnStop.Text = "Berhenti";
             this.btnStop.UseVisualStyleBackColor = true;
@@ -79,7 +79,7 @@
             // 
             this.rbOriginal.AutoSize = true;
             this.rbOriginal.Checked = true;
-            this.rbOriginal.Location = new System.Drawing.Point(12, 118);
+            this.rbOriginal.Location = new System.Drawing.Point(128, 12);
             this.rbOriginal.Name = "rbOriginal";
             this.rbOriginal.Size = new System.Drawing.Size(41, 17);
             this.rbOriginal.TabIndex = 3;
@@ -90,7 +90,7 @@
             // rbThreshold
             // 
             this.rbThreshold.AutoSize = true;
-            this.rbThreshold.Location = new System.Drawing.Point(12, 141);
+            this.rbThreshold.Location = new System.Drawing.Point(175, 12);
             this.rbThreshold.Name = "rbThreshold";
             this.rbThreshold.Size = new System.Drawing.Size(72, 17);
             this.rbThreshold.TabIndex = 4;
@@ -100,7 +100,7 @@
             // rbMorphology
             // 
             this.rbMorphology.AutoSize = true;
-            this.rbMorphology.Location = new System.Drawing.Point(12, 164);
+            this.rbMorphology.Location = new System.Drawing.Point(253, 12);
             this.rbMorphology.Name = "rbMorphology";
             this.rbMorphology.Size = new System.Drawing.Size(68, 17);
             this.rbMorphology.TabIndex = 5;
@@ -110,7 +110,7 @@
             // rbBlobDetection
             // 
             this.rbBlobDetection.AutoSize = true;
-            this.rbBlobDetection.Location = new System.Drawing.Point(12, 187);
+            this.rbBlobDetection.Location = new System.Drawing.Point(327, 12);
             this.rbBlobDetection.Name = "rbBlobDetection";
             this.rbBlobDetection.Size = new System.Drawing.Size(85, 17);
             this.rbBlobDetection.TabIndex = 6;
@@ -120,7 +120,7 @@
             // pictureBox1
             // 
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pictureBox1.Location = new System.Drawing.Point(108, 12);
+            this.pictureBox1.Location = new System.Drawing.Point(12, 35);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(480, 360);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -130,7 +130,7 @@
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(118, 24);
+            this.label1.Location = new System.Drawing.Point(23, 49);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(457, 336);
             this.label1.TabIndex = 9;
@@ -140,7 +140,7 @@
             // labelX1
             // 
             this.labelX1.AutoSize = true;
-            this.labelX1.Location = new System.Drawing.Point(673, 46);
+            this.labelX1.Location = new System.Drawing.Point(577, 87);
             this.labelX1.Name = "labelX1";
             this.labelX1.Size = new System.Drawing.Size(19, 13);
             this.labelX1.TabIndex = 10;
@@ -149,7 +149,7 @@
             // labelX2
             // 
             this.labelX2.AutoSize = true;
-            this.labelX2.Location = new System.Drawing.Point(673, 77);
+            this.labelX2.Location = new System.Drawing.Point(577, 118);
             this.labelX2.Name = "labelX2";
             this.labelX2.Size = new System.Drawing.Size(19, 13);
             this.labelX2.TabIndex = 11;
@@ -158,7 +158,7 @@
             // pictureBoxBlob
             // 
             this.pictureBoxBlob.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBoxBlob.Location = new System.Drawing.Point(594, 272);
+            this.pictureBoxBlob.Location = new System.Drawing.Point(497, 248);
             this.pictureBoxBlob.Name = "pictureBoxBlob";
             this.pictureBoxBlob.Size = new System.Drawing.Size(100, 100);
             this.pictureBoxBlob.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -168,7 +168,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(594, 256);
+            this.label4.Location = new System.Drawing.Point(498, 232);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(74, 13);
             this.label4.TabIndex = 13;
@@ -177,7 +177,7 @@
             // cbMoveDetection
             // 
             this.cbMoveDetection.AutoSize = true;
-            this.cbMoveDetection.Location = new System.Drawing.Point(594, 12);
+            this.cbMoveDetection.Location = new System.Drawing.Point(498, 53);
             this.cbMoveDetection.Name = "cbMoveDetection";
             this.cbMoveDetection.Size = new System.Drawing.Size(106, 17);
             this.cbMoveDetection.TabIndex = 14;
@@ -188,7 +188,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(594, 77);
+            this.label2.Location = new System.Drawing.Point(498, 118);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(76, 13);
             this.label2.TabIndex = 16;
@@ -197,7 +197,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(594, 46);
+            this.label3.Location = new System.Drawing.Point(498, 87);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(75, 13);
             this.label3.TabIndex = 15;
@@ -206,7 +206,7 @@
             // labelCountdown
             // 
             this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(600, 119);
+            this.labelCountdown.Location = new System.Drawing.Point(498, 131);
             this.labelCountdown.Name = "labelCountdown";
             this.labelCountdown.Size = new System.Drawing.Size(100, 100);
             this.labelCountdown.TabIndex = 17;
@@ -218,9 +218,9 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusLabelFPS,
             this.statusProgressBar1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 379);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 399);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(724, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(609, 22);
             this.statusStrip1.TabIndex = 18;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -233,12 +233,12 @@
             // statusProgressBar1
             // 
             this.statusProgressBar1.Name = "statusProgressBar1";
-            this.statusProgressBar1.Size = new System.Drawing.Size(666, 16);
+            this.statusProgressBar1.Size = new System.Drawing.Size(555, 16);
             // 
             // FormHandSlider
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(724, 401);
+            this.ClientSize = new System.Drawing.Size(609, 421);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.labelCountdown);
             this.Controls.Add(this.label2);

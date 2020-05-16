@@ -18,52 +18,52 @@ namespace HandSlider
 {
     public partial class FormHandSlider : Form
     {
-        BinaryDilation3x3 binaryDilation3x3;
-        BinaryErosion3x3 binaryErosion3x3;
-        Bitmap bitmapBlob, destImage, destinationBitmapBlob, frame, frameBlobs;
-        BitmapData bitmapData;
-        BlobCounter blobCounter;
-        Blob[] blobs;
-        Dilation dilation;
-        FilterInfoCollection fic;
-        Graphics graphics, graphicsBlob, g;
-        HiddenMarkovClassifier hmmc;
-        ImageAttributes imageAttributesBlob, wrapMode;
-        List<int> sequenceCodeList;
-        Median median;
-        NotifyIcon notifyIcon;
-        Opening opening;
-        Pen penRed, penGreen, penBlue;
-        Rectangle destRect, destinationRectangleBlob;
-        Thread thread;
-        Threshold threshold;
-        System.Timers.Timer timerLabel, timerFrame, timerFPS;
-        VideoCaptureDevice vcd;
-
-        bool getFrame, closing;
-        byte[] pixels;
-        double ye, cebe, ceer, ratio;
-        int actual;
-        int b, i, j, x, y;
-        int bytesPerPixel, byteCount, heightInPixels, widthInBytes, currentLine;
-        int oldBlue, oldGreen, oldRed;
-        int pointX, pointX1, pointX2, blobHeight, blobWidth, travel;
-        int fps, durationElapsed, delay, timerFrameInterval, duration;
-        int[] sequenceBlob;
-        string blobPosition, label;
-
+        private BinaryDilation3x3 binaryDilation3x3;
+        private BinaryErosion3x3 binaryErosion3x3;
+        private Bitmap bitmapBlob, destinationBitmap, destinationBitmapBlob, frame, frameBlobs;
+        private BitmapData bitmapData;
+        private BlobCounter blobCounter;
+        private Blob[] blobs;
+        private Dilation dilation;
+        private FilterInfoCollection fic;
+        private Graphics graphics, graphicsBlob;
+        private HiddenMarkovClassifier hmmc;
+        private ImageAttributes imageAttributes, imageAttributesBlob;
+        private List<int> sequenceCodeList;
+        private Median median;
+        private NotifyIcon notifyIcon;
+        private Opening opening;
+        private Pen penRed, penGreen, penBlue;
+        private Rectangle destinationRectangle, destinationRectangleBlob;
+        private Thread thread;
+        private Threshold threshold;
+        private System.Timers.Timer timerFPS, timerFrame, timerLabel;
+        private VideoCaptureDevice vcd;
+        private bool getFrame, closing;
+        private byte[] pixels;
+        private double ye, cebe, ceer, ratio;
+        private int actual;
+        private int b, i, j, x, y;
+        private int bytesPerPixel, byteCount, heightInPixels, widthInBytes, currentLine;
+        private int oldBlue, oldGreen, oldRed;
+        private int pointX, pointX1, pointX2, blobHeight, blobWidth, travel;
+        private int fps, durationElapsed, delay, timerFrameInterval, duration;
+        private int[] sequenceBlob;
+        private string blobPosition, label, hand;
+        
         public FormHandSlider()
         {
             InitializeComponent();
 
-            destImage = new Bitmap(480, 360);
+            destinationBitmap = new Bitmap(480, 360);
             destinationBitmapBlob = new Bitmap(20, 20);
             binaryDilation3x3 = new BinaryDilation3x3();
             binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
+            destinationRectangle = new Rectangle(0, 0, 480, 360);
             destinationRectangleBlob = new Rectangle(0, 0, 20, 20);
-            destRect = new Rectangle(0, 0, 480, 360);
             dilation = new Dilation();
+            imageAttributes = new ImageAttributes();
             median = new Median();
             notifyIcon = new NotifyIcon();
             opening = new Opening(new short[3, 3]);
@@ -84,7 +84,7 @@ namespace HandSlider
         {
             blobCounter.CoupledSizeFiltering = true;
             blobCounter.FilterBlobs = true;
-            
+
             // vertical rectangle
             //blobCounter.MinHeight = 35;
             //blobCounter.MaxHeight = 75;
@@ -96,20 +96,24 @@ namespace HandSlider
             blobCounter.MaxHeight = 35;
             blobCounter.MinWidth = 35;
             blobCounter.MaxWidth = 75;
-            
-            delay = 0;
-            duration = 0;
-            durationElapsed = 0;
+
+            destinationBitmap.SetResolution(destinationBitmap.HorizontalResolution, destinationBitmap.VerticalResolution);
             getFrame = true;
-            blobPosition = "NETRAL";
+
+            graphics = Graphics.FromImage(destinationBitmap);
+            graphics.CompositingMode = CompositingMode.SourceCopy;
+            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.SmoothingMode = SmoothingMode.HighQuality;
+            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
 
             notifyIcon.Icon = SystemIcons.Application;
             notifyIcon.Visible = true;
             notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
-
-            pictureBox1.SuspendLayout();
-            pictureBox1.Paint += new PaintEventHandler(pictureBox1_Paint);
-            pictureBox1.ResumeLayout();
+            
+            resetDetection();
 
             timerFPS.Elapsed += TimerFPS_Elapsed;
             timerFPS.AutoReset = true;
@@ -119,7 +123,7 @@ namespace HandSlider
             timerLabel.Enabled = true;
 
             timerFrameInterval = Convert.ToInt16(timerFrame.Interval);
-            
+
             // GUI
             btnStart.Enabled = false;
 
@@ -129,9 +133,13 @@ namespace HandSlider
             rbBlobDetection.Enabled = false;
             cbMoveDetection.Enabled = false;
 
-            btnStop.Enabled = false;
+            pictureBox1.SuspendLayout();
+            pictureBox1.Paint += new PaintEventHandler(pictureBox1_Paint);
+            pictureBox1.ResumeLayout();
 
             label1.Visible = true;
+
+            btnStop.Enabled = false;
             
             // Training
             thread.Start();
@@ -142,7 +150,7 @@ namespace HandSlider
             label1.Visible = false;
 
             btnStart.Enabled = false;
-            
+
             rbOriginal.Enabled = true;
             rbThreshold.Enabled = true;
             rbMorphology.Enabled = true;
@@ -173,6 +181,7 @@ namespace HandSlider
                 vcd.SignalToStop();
 
                 timerFPS.Enabled = false;
+                timerFPS.Stop();
 
                 timerFrame.Enabled = false;
                 timerFrame.Stop();
@@ -194,25 +203,21 @@ namespace HandSlider
 
                 btnStop.Enabled = false;
 
-                blobHeight = blobWidth = pointX1 = pointX2 = 0;
-                blobPosition = "NETRAL";
-                duration = 0;
-                durationElapsed = 0;
-                delay = 0;
-                
                 statusLabelFPS.Text = "0 FPS";
-                statusProgressBar1.Value = 0;
 
                 labelX1.Text = ": " + pointX1.ToString();
                 labelX2.Text = ": " + pointX2.ToString();
-                labelCountdown.Text = "0";
             }
         }
 
         private void cbMoveDetection_CheckedChanged(object sender, EventArgs e)
         {
+            resetDetection();
+
             if (cbMoveDetection.Checked)
             {
+                rbBlobDetection.Checked = true;
+
                 rbOriginal.Enabled = false;
                 rbThreshold.Enabled = false;
                 rbMorphology.Enabled = false;
@@ -224,17 +229,13 @@ namespace HandSlider
                 rbThreshold.Enabled = true;
                 rbMorphology.Enabled = true;
                 rbBlobDetection.Enabled = true;
-
-                duration = 0;
-                durationElapsed = 0;
-                delay = 0;
             }
         }
 
         private void FormHandSlider_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (vcd == null) { return; }
-            
+
             vcd.NewFrame -= new NewFrameEventHandler(newFrame);
             vcd.Stop();
             vcd.SignalToStop();
@@ -248,10 +249,10 @@ namespace HandSlider
         private void newFrame(object sender, NewFrameEventArgs eventArgs)
         {
             if (!getFrame) { return; }
-            
+
             frame = resizing(eventArgs.Frame);
             frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
+            
             if (rbOriginal.Checked)
             {
                 lock (pictureBox1)
@@ -289,46 +290,43 @@ namespace HandSlider
             }
 
             getFrame = false;
-            
+
             fps += 1;
+
+            frameBlobs = frame.Clone() as Bitmap;
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            if (frame == null) { return; }
+            if (frameBlobs == null) { return; }
 
-            frameBlobs = frame.Clone() as Bitmap;
             blobCounter.ProcessImage(frameBlobs);
             blobs = blobCounter.GetObjectsInformation();
-            g = e.Graphics;
 
             for (b = 0; b < blobs.Length; b++)
             {
                 blobCounter.ExtractBlobsImage(frameBlobs, blobs[b], false);
-                
+
                 bitmapBlob = blobs[b].Image.ToManagedImage();
 
                 //ratio = Convert.ToDouble(bitmapBlob.Height) / Convert.ToDouble(bitmapBlob.Width); // vertical horizontal
                 ratio = Convert.ToDouble(bitmapBlob.Width) / Convert.ToDouble(bitmapBlob.Height);
 
-                if (ratio < 2 || 2.5 < ratio) { continue; }
-                //if (ratio < 1.31159 || 1.68420 < ratio ) { continue; } // average from dataset
-                //if (ratio < 0.58392 || 3.29167 < ratio) { continue; } // min max from dataset
-                //if (ratio < 0.72895 || 2.57129 < ratio) { continue; } // average from min max of dataset
+                if (ratio < 1.7 || 2.5 < ratio) { continue; }
 
                 pointX = Convert.ToInt16(blobs[b].CenterOfGravity.X);
 
-                if (blobPosition.Equals("KIRI"))
+                if (hand.Equals("KIRI"))
                 {
                     bitmapBlob.RotateFlip(RotateFlipType.Rotate90FlipNone); // left-handed
                 }
-                else if(blobPosition.Equals("KANAN"))
+                else if (hand.Equals("KANAN"))
                 {
                     bitmapBlob.RotateFlip(RotateFlipType.Rotate270FlipNone);
                 }
                 else
                 {
-                    if (pointX <= (frameBlobs.Width / 2))
+                    if (pointX <= frameBlobs.Width / 2)
                     {
                         bitmapBlob.RotateFlip(RotateFlipType.Rotate90FlipNone); // left-handed
                         blobPosition = "KIRI";
@@ -345,15 +343,15 @@ namespace HandSlider
 
                 if (rbBlobDetection.Checked && label.Equals("F"))
                 {
-                    g.DrawRectangle(penRed, blobs[b].Rectangle); continue;
+                    e.Graphics.DrawRectangle(penRed, blobs[b].Rectangle); continue;
                 }
                 else if (rbBlobDetection.Checked && label.Equals("S"))
                 {
-                    g.DrawRectangle(penGreen, blobs[b].Rectangle); continue;
+                    e.Graphics.DrawRectangle(penGreen, blobs[b].Rectangle); continue;
                 }
                 else if (rbBlobDetection.Checked && label.Equals("V"))
                 {
-                    g.DrawRectangle(penBlue, blobs[b].Rectangle);
+                    e.Graphics.DrawRectangle(penBlue, blobs[b].Rectangle);
                     pictureBoxBlob.Image = bitmapBlob;
                 }
 
@@ -361,16 +359,92 @@ namespace HandSlider
 
                 if (cbMoveDetection.Checked && label.Equals("V"))
                 {
-                    if (rbBlobDetection.Checked)
-                    {
-                        g.DrawRectangle(penBlue, blobs[b].Rectangle);
-                        pictureBoxBlob.Image = bitmapBlob;
-                    }
-                    
-                    moving(pointX, bitmapBlob.Height , bitmapBlob.Width);
+                    moving(pointX, bitmapBlob.Height, bitmapBlob.Width);
                 }
             }
-            
+
+            //throw new NotImplementedException();
+        }
+        
+        private void TimerFPS_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Invoke(new Action(() =>
+            {
+                statusLabelFPS.Text = fps + " FPS";
+            }));
+
+            fps = 0;
+
+            //throw new NotImplementedException();
+        }
+
+        private void TimerFrame_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            getFrame = true;
+            // Console.WriteLine("d " + duration + " de " + durationElapsed + " dl " + delay);
+            if (delay > 0)
+            {
+                delay -= timerFrameInterval;
+
+                if (delay <= 0)
+                {
+                    resetDetection();
+                }
+            }
+            else if (duration > 0)
+            {
+                durationElapsed = durationElapsed + timerFrameInterval;
+
+                if (durationElapsed > duration)
+                {
+                    resetDetection();
+
+                    notifyIcon.BalloonTipText = "GAGAL Mendeteksi Gerakan";
+                    notifyIcon.ShowBalloonTip(duration / 5);
+
+                    delay = 2500;
+                    durationElapsed = 5000;
+                }
+            }
+
+            if (closing) { return; }
+
+            Invoke(new Action(() =>
+            {
+
+                labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Regular);
+                labelCountdown.ForeColor = Color.Black;
+
+                if (delay > 0)
+                {
+                    labelCountdown.Text = Math.Ceiling((double)delay / 1000).ToString();
+                }
+                else if (durationElapsed == 0)
+                {
+                    labelCountdown.Text = "0";
+                }
+                else
+                {
+                    labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Underline);
+                    labelCountdown.ForeColor = Color.Blue;
+
+                    labelCountdown.Text = Math.Floor((double)durationElapsed * 5 / duration).ToString();
+                }
+
+                if (hand.Equals("KANAN"))
+                {
+                    statusProgressBar1.RightToLeft = RightToLeft.Yes;
+                    statusProgressBar1.RightToLeftLayout = true;
+                }
+                else if (hand.Equals("KIRI"))
+                {
+                    statusProgressBar1.RightToLeft = RightToLeft.No;
+                    statusProgressBar1.RightToLeftLayout = false;
+                }
+
+                statusProgressBar1.Value = durationElapsed / 50;
+            }));
+
             //throw new NotImplementedException();
         }
 
@@ -378,7 +452,8 @@ namespace HandSlider
         {
             if (!IsHandleCreated) { return; }
 
-            Invoke(new Action(() => {
+            Invoke(new Action(() =>
+            {
 
                 if (label1.Text == "Menyiapkan Dataset")
                 {
@@ -402,86 +477,6 @@ namespace HandSlider
             //throw new NotImplementedException();
         }
 
-        private void TimerFPS_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            Invoke(new Action(() => {
-                statusLabelFPS.Text = fps + " FPS";
-            }));
-
-            fps = 0;
-
-            //throw new NotImplementedException();
-        }
-
-        private void TimerFrame_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            getFrame = true;
-            
-            if (delay > 0)
-            {
-                delay -= timerFrameInterval;
-                
-                if (delay <= 0)
-                {
-                    duration = 0;
-                    delay = 0;
-                }
-            }
-            else if (duration > 0)
-            {
-                durationElapsed = durationElapsed + timerFrameInterval;
-
-                if (durationElapsed > duration)
-                {
-                    blobHeight = blobWidth = pointX1 = pointX2 = 0;
-                    blobPosition = "NETRAL";
-                    delay = 5000;
-                    durationElapsed = 0;
-                }
-            }
-
-            if (closing) { return; }
-
-            Invoke(new Action(() => {
-                
-                labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Regular);
-                labelCountdown.ForeColor = Color.Black;
-                labelCountdown.BorderStyle = BorderStyle.None;
-
-                if (delay > 0)
-                {
-                    labelCountdown.Text = Math.Ceiling((double) delay / 1000).ToString();
-                }
-                else if (durationElapsed == 0)
-                {
-                    labelCountdown.Text = "0";
-                }
-                else
-                {
-                    labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Underline);
-                    labelCountdown.ForeColor = Color.Blue;
-                    labelCountdown.BorderStyle = BorderStyle.FixedSingle;
-
-                    labelCountdown.Text = Math.Floor((double) durationElapsed * 5 / duration).ToString();
-                }
-                
-                if (blobPosition.Equals("KANAN"))
-                {
-                    statusProgressBar1.RightToLeft = RightToLeft.Yes;
-                    statusProgressBar1.RightToLeftLayout = true;
-                }
-                else if (blobPosition.Equals("KIRI"))
-                {
-                    statusProgressBar1.RightToLeft = RightToLeft.No;
-                    statusProgressBar1.RightToLeftLayout = false;
-                }
-
-                statusProgressBar1.Value = durationElapsed / 50;
-            }));
-            
-            //throw new NotImplementedException();
-        }
-
         // Functions | Methods
 
         private Bitmap morphologing(Bitmap bitmap)
@@ -491,26 +486,11 @@ namespace HandSlider
 
         private Bitmap resizing(Bitmap bitmap)
         {
-            destImage.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
+            graphics.DrawImage(bitmap, destinationRectangle, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, imageAttributes);
 
-            using (graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                using (wrapMode = new ImageAttributes())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(bitmap, destRect, 0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-            }
-
-            return destImage;
+            return destinationBitmap;
         }
-        
+
         private Bitmap resizingBlob(Bitmap bitmap)
         {
             destinationBitmapBlob.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
@@ -559,15 +539,15 @@ namespace HandSlider
 
                     if (78 <= cebe && cebe <= 126 && 134 <= ceer && ceer <= 172)
                     {
-                        pixels[currentLine + x] = (byte)255;
-                        pixels[currentLine + x + 1] = (byte)255;
-                        pixels[currentLine + x + 2] = (byte)255;
+                        pixels[currentLine + x] = 255;
+                        pixels[currentLine + x + 1] = 255;
+                        pixels[currentLine + x + 2] = 255;
                     }
                     else
                     {
-                        pixels[currentLine + x] = (byte)0;
-                        pixels[currentLine + x + 1] = (byte)0;
-                        pixels[currentLine + x + 2] = (byte)0;
+                        pixels[currentLine + x] = 0;
+                        pixels[currentLine + x + 1] = 0;
+                        pixels[currentLine + x + 2] = 0;
                     }
                 }
             }
@@ -577,7 +557,7 @@ namespace HandSlider
 
             return bitmap;
         }
-        
+
         private int[] code(Bitmap bitmap)
         {
             sequenceCodeList = new List<int>(400);
@@ -599,66 +579,76 @@ namespace HandSlider
 
             return sequenceCodeList.ToArray();
         }
-
+        
         private string getHandLabel(int[] seq)
         {
             hmmc.LogLikelihood(seq, out actual);
 
             return hmmc.Models[actual].Tag as string;
         }
-        
+
         private void moving(int xCoordinate, int bitmapHeight, int bitmapWidth)
         {
             if (pointX1 == 0)
             {
                 duration = 5000;
-                
-                notifyIcon.BalloonTipText = "Tangan " + blobPosition;
+
+                hand = blobPosition;
+
+                notifyIcon.BalloonTipText = "Tangan " + hand;
                 notifyIcon.ShowBalloonTip(duration / 5);
 
                 pointX1 = xCoordinate;
-                
+
                 blobHeight = bitmapWidth;
                 blobWidth = bitmapHeight;
-                
+
                 return;
             }
-            
+
             pointX2 = xCoordinate;
-            
-            if (bitmapWidth < blobHeight - 5 || blobHeight + 5 < bitmapWidth)
+            //Console.WriteLine(blobHeight + "h:w" + blobWidth + " > " + bitmapWidth + "h:w" + bitmapHeight + " >>> " + pointX1 + " - " + pointX2 + " = " + (pointX1 - pointX2));
+            if (bitmapWidth < blobHeight - 15 || blobHeight + 15 < bitmapWidth)
             { return; }
 
-            if (bitmapHeight < blobWidth - 5 || blobWidth + 5 < bitmapHeight)
+            if (bitmapHeight < blobWidth - 30 || blobWidth + 30 < bitmapHeight)
             { return; }
 
             travel = pointX1 - pointX2;
-            
-            if (blobPosition.Equals("KANAN") && -blobWidth * 2 < travel && travel < -blobWidth)
+
+            if (hand.Equals("KANAN") && blobWidth / 2 < travel && travel < blobWidth * 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KIRI";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
-                SendKeys.Send("{LEFT}");
+                SendKeys.Send("{RIGHT}");
             }
-            else if (blobPosition.Equals("KIRI") && blobWidth < travel && travel < blobWidth * 2)
+            else if (hand.Equals("KIRI") && -blobWidth * 2 < travel && travel < -blobWidth / 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KANAN";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
-                SendKeys.Send("{RIGHT}");
+                SendKeys.Send("{LEFT}");
             }
             else
             { return; }
-            
-            durationElapsed = 5000;
 
-            Console.WriteLine(blobHeight + "h:w" + blobWidth + " > " + bitmapWidth + "h:w" + bitmapHeight + " >>> " + pointX1 + " - " + pointX2 + " = " + (pointX1 - pointX2));
+            delay = 5000;
 
             labelX1.Text = ": " + pointX1.ToString();
             labelX2.Text = ": " + pointX2.ToString();
         }
-        
+
+        private void resetDetection()
+        {
+            duration = 0;
+            durationElapsed = 0;
+            delay = 0;
+
+            blobHeight = blobWidth = pointX1 = pointX2 = 0;
+            hand = "NETRAL";
+        }
+
         // Dataset
 
         private void datasetTesting()
@@ -725,7 +715,7 @@ namespace HandSlider
             int iterations = 100;
             double limit = 0;
 
-            var teacher = new HiddenMarkovClassifierLearning(hmmc, i =>
+            HiddenMarkovClassifierLearning teacher = new HiddenMarkovClassifierLearning(hmmc, i =>
             {
                 return new BaumWelchLearning(hmmc.Models[i])
                 {
@@ -743,7 +733,8 @@ namespace HandSlider
             timerLabel.Stop();
             timerLabel.Dispose();
 
-            Invoke(new Action(() => {
+            Invoke(new Action(() =>
+            {
 
                 btnStart.Enabled = true;
 
