@@ -48,9 +48,8 @@ namespace HandSlider
         private int oldBlue, oldGreen, oldRed;
         private int pointX, pointX1, pointX2, blobHeight, blobWidth, travel;
         private int fps, durationElapsed, delay, timerFrameInterval, duration;
-        private int[] sequenceBlob;
         private string blobPosition, label, hand;
-        
+
         public FormHandSlider()
         {
             InitializeComponent();
@@ -70,7 +69,7 @@ namespace HandSlider
             penGreen = new Pen(Color.Green);
             penRed = new Pen(Color.Red);
             penBlue = new Pen(Color.Blue);
-            sequenceBlob = new int[400];
+            sequenceCodeList = new List<int>(400);
             threshold = new Threshold(128);
             thread = new Thread(datasetTraining);
             timerFPS = new System.Timers.Timer(1000); // check FPS
@@ -112,7 +111,7 @@ namespace HandSlider
             notifyIcon.Icon = SystemIcons.Application;
             notifyIcon.Visible = true;
             notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
-            
+
             resetDetection();
 
             timerFPS.Elapsed += TimerFPS_Elapsed;
@@ -140,7 +139,7 @@ namespace HandSlider
             label1.Visible = true;
 
             btnStop.Enabled = false;
-            
+
             // Training
             thread.Start();
         }
@@ -176,6 +175,8 @@ namespace HandSlider
             DialogResult dialogResult = MessageBox.Show("Berhenti merekam?", "Perhatian", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (dialogResult == DialogResult.Yes)
             {
+                resetDetection();
+
                 vcd.NewFrame -= new NewFrameEventHandler(newFrame);
                 vcd.Stop();
                 vcd.SignalToStop();
@@ -252,7 +253,7 @@ namespace HandSlider
 
             frame = resizing(eventArgs.Frame);
             frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            
+
             if (rbOriginal.Checked)
             {
                 lock (pictureBox1)
@@ -271,7 +272,8 @@ namespace HandSlider
                 }
             }
 
-            frame = morphologing(frame.Clone() as Bitmap);
+            // morfologi
+            frame = median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(Grayscale.CommonAlgorithms.BT709.Apply(frame.Clone() as Bitmap))));
 
             if (rbMorphology.Checked)
             {
@@ -298,8 +300,45 @@ namespace HandSlider
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
+            // update label
+            if (delay > 0)
+            {
+                labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Regular);
+                labelCountdown.ForeColor = Color.Black;
+
+                labelCountdown.Text = Math.Ceiling((double)delay / 1000).ToString();
+            }
+            else if (durationElapsed > 0)
+            {
+                labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Underline);
+                labelCountdown.ForeColor = Color.Blue;
+
+                labelCountdown.Text = Math.Floor((double)(duration - durationElapsed) * 5 / duration).ToString();
+            }
+            else if (durationElapsed == 0)
+            {
+                labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Regular);
+                labelCountdown.ForeColor = Color.Black;
+                labelCountdown.Text = "0";
+            }
+
+            // update progres bar
+            if (hand.Equals("KIRI"))
+            {
+                statusProgressBar1.RightToLeft = RightToLeft.No;
+                statusProgressBar1.RightToLeftLayout = false;
+            }
+            else if (hand.Equals("KANAN"))
+            {
+                statusProgressBar1.RightToLeft = RightToLeft.Yes;
+                statusProgressBar1.RightToLeftLayout = true;
+            }
+
+            statusProgressBar1.Value = durationElapsed / 50;
+
             if (frameBlobs == null) { return; }
 
+            // detect blob
             blobCounter.ProcessImage(frameBlobs);
             blobs = blobCounter.GetObjectsInformation();
 
@@ -338,8 +377,7 @@ namespace HandSlider
                     }
                 }
 
-                sequenceBlob = code(threshold.Apply(Grayscale.CommonAlgorithms.BT709.Apply(resizingBlob(bitmapBlob))));
-                label = getHandLabel(sequenceBlob);
+                label = getHandLabel(code(threshold.Apply(Grayscale.CommonAlgorithms.BT709.Apply(resizingBlob(bitmapBlob)))));
 
                 if (rbBlobDetection.Checked && label.Equals("F"))
                 {
@@ -365,7 +403,7 @@ namespace HandSlider
 
             //throw new NotImplementedException();
         }
-        
+
         private void TimerFPS_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             Invoke(new Action(() =>
@@ -409,48 +447,14 @@ namespace HandSlider
 
             if (closing) { return; }
 
-            Invoke(new Action(() =>
-            {
-
-                labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Regular);
-                labelCountdown.ForeColor = Color.Black;
-
-                if (delay > 0)
-                {
-                    labelCountdown.Text = Math.Ceiling((double)delay / 1000).ToString();
-                }
-                else if (durationElapsed == 0)
-                {
-                    labelCountdown.Text = "0";
-                }
-                else
-                {
-                    labelCountdown.Font = new Font("Microsoft Sans Serif", 50, FontStyle.Underline);
-                    labelCountdown.ForeColor = Color.Blue;
-
-                    labelCountdown.Text = Math.Floor((double)durationElapsed * 5 / duration).ToString();
-                }
-
-                if (hand.Equals("KANAN"))
-                {
-                    statusProgressBar1.RightToLeft = RightToLeft.Yes;
-                    statusProgressBar1.RightToLeftLayout = true;
-                }
-                else if (hand.Equals("KIRI"))
-                {
-                    statusProgressBar1.RightToLeft = RightToLeft.No;
-                    statusProgressBar1.RightToLeftLayout = false;
-                }
-
-                statusProgressBar1.Value = durationElapsed / 50;
-            }));
-
             //throw new NotImplementedException();
         }
 
         private void TimerLabel_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (!IsHandleCreated) { return; }
+
+            if (closing) { return; }
 
             Invoke(new Action(() =>
             {
@@ -478,11 +482,6 @@ namespace HandSlider
         }
 
         // Functions | Methods
-
-        private Bitmap morphologing(Bitmap bitmap)
-        {
-            return median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(Grayscale.CommonAlgorithms.BT709.Apply(bitmap))));
-        }
 
         private Bitmap resizing(Bitmap bitmap)
         {
@@ -560,7 +559,7 @@ namespace HandSlider
 
         private int[] code(Bitmap bitmap)
         {
-            sequenceCodeList = new List<int>(400);
+            sequenceCodeList.Clear();
 
             for (i = 0; i < bitmap.Height; i++)
             {
@@ -579,7 +578,7 @@ namespace HandSlider
 
             return sequenceCodeList.ToArray();
         }
-        
+
         private string getHandLabel(int[] seq)
         {
             hmmc.LogLikelihood(seq, out actual);
