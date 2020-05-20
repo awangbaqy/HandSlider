@@ -20,15 +20,17 @@ namespace HandSlider
     {
         private BinaryDilation3x3 binaryDilation3x3;
         private BinaryErosion3x3 binaryErosion3x3;
-        private Bitmap bitmapBlob, destinationBitmap, destinationBitmapBlob, frame, frameBlobs;
+        private Bitmap bitmapBlob, destinationBitmap, destinationBitmapBlob, frame, frameBlobs, frameForeground, frameBackground;
         private BitmapData bitmapData;
         private BlobCounter blobCounter;
         private Blob[] blobs;
         private Dilation dilation;
         private FilterInfoCollection fic;
         private Graphics graphics, graphicsBlob;
+        private Grayscale grayscale;
         private HiddenMarkovClassifier hmmc;
         private ImageAttributes imageAttributes, imageAttributesBlob;
+        private Intersect intersect;
         private List<int> sequenceCodeList;
         private Median median;
         private NotifyIcon notifyIcon;
@@ -37,9 +39,10 @@ namespace HandSlider
         private Rectangle destinationRectangle, destinationRectangleBlob;
         private Thread thread;
         private Threshold threshold;
+        private ThresholdedDifference thresholdedDifference;
         private System.Timers.Timer timerFPS, timerFrame, timerLabel;
         private VideoCaptureDevice vcd;
-        private bool getFrame, closing;
+        private bool getFrame, closing, foregroundChecked, blobChecked, moveChecked;
         private byte[] pixels;
         private double ye, cebe, ceer, ratio;
         private int actual;
@@ -63,6 +66,7 @@ namespace HandSlider
             destinationRectangleBlob = new Rectangle(0, 0, 20, 20);
             dilation = new Dilation();
             imageAttributes = new ImageAttributes();
+            intersect = new Intersect();
             median = new Median();
             notifyIcon = new NotifyIcon();
             opening = new Opening(new short[3, 3]);
@@ -71,6 +75,7 @@ namespace HandSlider
             penBlue = new Pen(Color.Blue);
             sequenceCodeList = new List<int>(400);
             threshold = new Threshold(128);
+            thresholdedDifference = new ThresholdedDifference(64);
             thread = new Thread(datasetTraining);
             timerFPS = new System.Timers.Timer(1000); // check FPS
             timerFrame = new System.Timers.Timer(100); // 10 fps
@@ -106,6 +111,8 @@ namespace HandSlider
             graphics.SmoothingMode = SmoothingMode.HighQuality;
             graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
+            grayscale = Grayscale.CommonAlgorithms.BT709;
+
             imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
 
             notifyIcon.Icon = SystemIcons.Application;
@@ -127,9 +134,13 @@ namespace HandSlider
             btnStart.Enabled = false;
 
             rbOriginal.Enabled = false;
+            rbBGS.Enabled = false;
             rbThreshold.Enabled = false;
+            rbIntersect.Enabled = false;
             rbMorphology.Enabled = false;
-            rbBlobDetection.Enabled = false;
+
+            cbForegroundDetection.Enabled = false;
+            cbBlobDetection.Enabled = false;
             cbMoveDetection.Enabled = false;
 
             pictureBox1.SuspendLayout();
@@ -153,7 +164,9 @@ namespace HandSlider
             rbOriginal.Enabled = true;
             rbThreshold.Enabled = true;
             rbMorphology.Enabled = true;
-            rbBlobDetection.Enabled = true;
+
+            cbForegroundDetection.Enabled = true;
+            cbBlobDetection.Enabled = true;
             cbMoveDetection.Enabled = true;
 
             btnStop.Enabled = true;
@@ -173,41 +186,95 @@ namespace HandSlider
         private void btnStop_Click(object sender, EventArgs e)
         {
             DialogResult dialogResult = MessageBox.Show("Berhenti merekam?", "Perhatian", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (dialogResult == DialogResult.Yes)
+            if (dialogResult == DialogResult.No) { return; }
+
+            resetDetection();
+
+            vcd.NewFrame -= new NewFrameEventHandler(newFrame);
+            vcd.Stop();
+            vcd.SignalToStop();
+
+            timerFPS.Enabled = false;
+            timerFPS.Stop();
+
+            timerFrame.Enabled = false;
+            timerFrame.Stop();
+
+            btnStart.Enabled = true;
+
+            // set default controls state
+            rbOriginal.Checked = true;
+
+            cbForegroundDetection.Checked = false;
+            cbBlobDetection.Checked = false;
+            cbMoveDetection.Checked = false;
+
+            // disable control
+            rbOriginal.Enabled = false;
+            rbBGS.Enabled = false;
+            rbThreshold.Enabled = false;
+            rbIntersect.Enabled = false;
+            rbMorphology.Enabled = false;
+
+            cbForegroundDetection.Enabled = false;
+            cbBlobDetection.Enabled = false;
+            cbMoveDetection.Enabled = false;
+
+            pictureBox1.Image = null;
+            pictureBoxBlob.Image = null;
+            label1.Text = "Aplikasi Siap!";
+            label1.Visible = true;
+
+
+            btnStop.Enabled = false;
+
+            statusLabelFPS.Text = "0 FPS";
+
+            labelX1.Text = ": " + pointX1.ToString();
+            labelX2.Text = ": " + pointX2.ToString();
+        }
+
+        private void cbBlobDetection_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbBlobDetection.Checked)
             {
-                resetDetection();
-
-                vcd.NewFrame -= new NewFrameEventHandler(newFrame);
-                vcd.Stop();
-                vcd.SignalToStop();
-
-                timerFPS.Enabled = false;
-                timerFPS.Stop();
-
-                timerFrame.Enabled = false;
-                timerFrame.Stop();
-
-                btnStart.Enabled = true;
-
-                rbOriginal.Checked = true;
-                cbMoveDetection.Checked = false;
-
-                rbOriginal.Enabled = false;
-                rbThreshold.Enabled = false;
-                rbMorphology.Enabled = false;
-                rbBlobDetection.Enabled = false;
-                cbMoveDetection.Enabled = false;
-
-                pictureBox1.Image = null;
+                blobChecked = true;
+            }
+            else
+            {
                 pictureBoxBlob.Image = null;
-                label1.Visible = true;
+                blobChecked = false;
+            }
+        }
 
-                btnStop.Enabled = false;
+        private void cbForegroundDetection_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbForegroundDetection.Checked)
+            {
+                DialogResult dialogResult = MessageBox.Show(
+                    "Kamera akan mengambil BACKGROUND.\n" +
+                    "Pastikan tidak ada objek bergerak.\n" +
+                    "Ambil Background?",
+                    "Background", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (dialogResult == DialogResult.No) { cbForegroundDetection.Checked = false; return; }
 
-                statusLabelFPS.Text = "0 FPS";
+                thresholdedDifference.OverlayImage = frameBackground.Clone() as Bitmap;
 
-                labelX1.Text = ": " + pointX1.ToString();
-                labelX2.Text = ": " + pointX2.ToString();
+                rbBGS.Enabled = true;
+                rbIntersect.Enabled = true;
+
+                foregroundChecked = true;
+            }
+            else
+            {
+                rbBGS.Checked = false;
+                rbIntersect.Checked = false;
+
+                rbBGS.Enabled = false;
+                rbIntersect.Enabled = false;
+
+                frameForeground = null;
+                foregroundChecked = false;
             }
         }
 
@@ -217,19 +284,23 @@ namespace HandSlider
 
             if (cbMoveDetection.Checked)
             {
-                rbBlobDetection.Checked = true;
-
                 rbOriginal.Enabled = false;
+                rbBGS.Enabled = false;
                 rbThreshold.Enabled = false;
+                rbIntersect.Enabled = false;
                 rbMorphology.Enabled = false;
-                rbBlobDetection.Enabled = false;
+
+                moveChecked = true;
             }
             else
             {
                 rbOriginal.Enabled = true;
+                rbBGS.Enabled = true;
                 rbThreshold.Enabled = true;
+                rbIntersect.Enabled = true;
                 rbMorphology.Enabled = true;
-                rbBlobDetection.Enabled = true;
+
+                moveChecked = false;
             }
         }
 
@@ -253,6 +324,7 @@ namespace HandSlider
 
             frame = resizing(eventArgs.Frame);
             frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            frameBackground = frame;
 
             if (rbOriginal.Checked)
             {
@@ -262,7 +334,22 @@ namespace HandSlider
                 }
             }
 
-            frame = thresholding(frame.Clone() as Bitmap);
+            // get diff foreground
+            if (foregroundChecked)
+            {
+                frameForeground = thresholdedDifference.Apply(frame.Clone() as Bitmap);
+
+                if (rbBGS.Checked)
+                {
+                    lock (pictureBox1)
+                    {
+                        pictureBox1.Image = frameForeground.Clone() as Bitmap;
+                    }
+                }
+            }
+
+            // get skin foreground
+            frame = grayscale.Apply(thresholding(frame.Clone() as Bitmap));
 
             if (rbThreshold.Checked)
             {
@@ -272,18 +359,26 @@ namespace HandSlider
                 }
             }
 
-            // morfologi
-            frame = median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(Grayscale.CommonAlgorithms.BT709.Apply(frame.Clone() as Bitmap))));
-
-            if (rbMorphology.Checked)
+            // intersect to get foreground
+            if (foregroundChecked)
             {
-                lock (pictureBox1)
+                intersect.OverlayImage = frame.Clone() as Bitmap;
+                Console.WriteLine(frame.GetPixelFormatSize());
+                frame = intersect.Apply(frameForeground.Clone() as Bitmap);
+
+                if (rbIntersect.Checked)
                 {
-                    pictureBox1.Image = frame.Clone() as Bitmap;
+                    lock (pictureBox1)
+                    {
+                        pictureBox1.Image = frame.Clone() as Bitmap;
+                    }
                 }
             }
 
-            if (rbBlobDetection.Checked)
+            // morphology
+            frame = median.Apply(binaryErosion3x3.Apply(binaryDilation3x3.Apply(frame.Clone() as Bitmap)));
+
+            if (rbMorphology.Checked)
             {
                 lock (pictureBox1)
                 {
@@ -379,15 +474,15 @@ namespace HandSlider
 
                 label = getHandLabel(code(threshold.Apply(Grayscale.CommonAlgorithms.BT709.Apply(resizingBlob(bitmapBlob)))));
 
-                if (rbBlobDetection.Checked && label.Equals("F"))
+                if (blobChecked && label.Equals("F"))
                 {
                     e.Graphics.DrawRectangle(penRed, blobs[b].Rectangle); continue;
                 }
-                else if (rbBlobDetection.Checked && label.Equals("S"))
+                else if (blobChecked && label.Equals("S"))
                 {
                     e.Graphics.DrawRectangle(penGreen, blobs[b].Rectangle); continue;
                 }
-                else if (rbBlobDetection.Checked && label.Equals("V"))
+                else if (blobChecked && label.Equals("V"))
                 {
                     e.Graphics.DrawRectangle(penBlue, blobs[b].Rectangle);
                     pictureBoxBlob.Image = bitmapBlob;
@@ -395,7 +490,7 @@ namespace HandSlider
 
                 if (delay > 0) { return; }
 
-                if (cbMoveDetection.Checked && label.Equals("V"))
+                if (moveChecked && label.Equals("V"))
                 {
                     moving(pointX, bitmapBlob.Height, bitmapBlob.Width);
                 }

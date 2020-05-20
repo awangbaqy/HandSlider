@@ -34,7 +34,6 @@
             this.rbOriginal = new System.Windows.Forms.RadioButton();
             this.rbThreshold = new System.Windows.Forms.RadioButton();
             this.rbMorphology = new System.Windows.Forms.RadioButton();
-            this.rbBlobDetection = new System.Windows.Forms.RadioButton();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.labelX1 = new System.Windows.Forms.Label();
@@ -48,6 +47,10 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabelFPS = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.cbForegroundDetection = new System.Windows.Forms.CheckBox();
+            this.cbBlobDetection = new System.Windows.Forms.CheckBox();
+            this.rbBGS = new System.Windows.Forms.RadioButton();
+            this.rbIntersect = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBlob)).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -58,20 +61,20 @@
             this.btnStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnStart.Location = new System.Drawing.Point(498, 12);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(100, 35);
+            this.btnStart.Size = new System.Drawing.Size(60, 35);
             this.btnStart.TabIndex = 1;
-            this.btnStart.Text = "Mulai";
+            this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // btnStop
             // 
             this.btnStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStop.Location = new System.Drawing.Point(497, 360);
+            this.btnStop.Location = new System.Drawing.Point(564, 12);
             this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(100, 35);
+            this.btnStop.Size = new System.Drawing.Size(60, 35);
             this.btnStop.TabIndex = 2;
-            this.btnStop.Text = "Berhenti";
+            this.btnStop.Text = "Stop";
             this.btnStop.UseVisualStyleBackColor = true;
             this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
@@ -79,7 +82,7 @@
             // 
             this.rbOriginal.AutoSize = true;
             this.rbOriginal.Checked = true;
-            this.rbOriginal.Location = new System.Drawing.Point(128, 12);
+            this.rbOriginal.Location = new System.Drawing.Point(12, 12);
             this.rbOriginal.Name = "rbOriginal";
             this.rbOriginal.Size = new System.Drawing.Size(41, 17);
             this.rbOriginal.TabIndex = 3;
@@ -90,7 +93,7 @@
             // rbThreshold
             // 
             this.rbThreshold.AutoSize = true;
-            this.rbThreshold.Location = new System.Drawing.Point(175, 12);
+            this.rbThreshold.Location = new System.Drawing.Point(112, 12);
             this.rbThreshold.Name = "rbThreshold";
             this.rbThreshold.Size = new System.Drawing.Size(72, 17);
             this.rbThreshold.TabIndex = 4;
@@ -100,22 +103,12 @@
             // rbMorphology
             // 
             this.rbMorphology.AutoSize = true;
-            this.rbMorphology.Location = new System.Drawing.Point(253, 12);
+            this.rbMorphology.Location = new System.Drawing.Point(262, 12);
             this.rbMorphology.Name = "rbMorphology";
             this.rbMorphology.Size = new System.Drawing.Size(68, 17);
             this.rbMorphology.TabIndex = 5;
             this.rbMorphology.Text = "Morfologi";
             this.rbMorphology.UseVisualStyleBackColor = true;
-            // 
-            // rbBlobDetection
-            // 
-            this.rbBlobDetection.AutoSize = true;
-            this.rbBlobDetection.Location = new System.Drawing.Point(327, 12);
-            this.rbBlobDetection.Name = "rbBlobDetection";
-            this.rbBlobDetection.Size = new System.Drawing.Size(85, 17);
-            this.rbBlobDetection.TabIndex = 6;
-            this.rbBlobDetection.Text = "Deteksi Blob";
-            this.rbBlobDetection.UseVisualStyleBackColor = true;
             // 
             // pictureBox1
             // 
@@ -140,7 +133,7 @@
             // labelX1
             // 
             this.labelX1.AutoSize = true;
-            this.labelX1.Location = new System.Drawing.Point(577, 87);
+            this.labelX1.Location = new System.Drawing.Point(577, 131);
             this.labelX1.Name = "labelX1";
             this.labelX1.Size = new System.Drawing.Size(19, 13);
             this.labelX1.TabIndex = 10;
@@ -149,7 +142,7 @@
             // labelX2
             // 
             this.labelX2.AutoSize = true;
-            this.labelX2.Location = new System.Drawing.Point(577, 118);
+            this.labelX2.Location = new System.Drawing.Point(577, 157);
             this.labelX2.Name = "labelX2";
             this.labelX2.Size = new System.Drawing.Size(19, 13);
             this.labelX2.TabIndex = 11;
@@ -158,7 +151,7 @@
             // pictureBoxBlob
             // 
             this.pictureBoxBlob.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBoxBlob.Location = new System.Drawing.Point(497, 248);
+            this.pictureBoxBlob.Location = new System.Drawing.Point(504, 295);
             this.pictureBoxBlob.Name = "pictureBoxBlob";
             this.pictureBoxBlob.Size = new System.Drawing.Size(100, 100);
             this.pictureBoxBlob.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -168,7 +161,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(498, 232);
+            this.label4.Location = new System.Drawing.Point(501, 279);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(74, 13);
             this.label4.TabIndex = 13;
@@ -177,7 +170,7 @@
             // cbMoveDetection
             // 
             this.cbMoveDetection.AutoSize = true;
-            this.cbMoveDetection.Location = new System.Drawing.Point(498, 53);
+            this.cbMoveDetection.Location = new System.Drawing.Point(501, 99);
             this.cbMoveDetection.Name = "cbMoveDetection";
             this.cbMoveDetection.Size = new System.Drawing.Size(106, 17);
             this.cbMoveDetection.TabIndex = 14;
@@ -188,7 +181,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(498, 118);
+            this.label2.Location = new System.Drawing.Point(498, 157);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(76, 13);
             this.label2.TabIndex = 16;
@@ -197,7 +190,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(498, 87);
+            this.label3.Location = new System.Drawing.Point(498, 131);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(75, 13);
             this.label3.TabIndex = 15;
@@ -206,7 +199,7 @@
             // labelCountdown
             // 
             this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(498, 131);
+            this.labelCountdown.Location = new System.Drawing.Point(504, 179);
             this.labelCountdown.Name = "labelCountdown";
             this.labelCountdown.Size = new System.Drawing.Size(100, 100);
             this.labelCountdown.TabIndex = 17;
@@ -220,7 +213,7 @@
             this.statusProgressBar1});
             this.statusStrip1.Location = new System.Drawing.Point(0, 399);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(609, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(634, 22);
             this.statusStrip1.TabIndex = 18;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -235,10 +228,58 @@
             this.statusProgressBar1.Name = "statusProgressBar1";
             this.statusProgressBar1.Size = new System.Drawing.Size(555, 16);
             // 
+            // cbForegroundDetection
+            // 
+            this.cbForegroundDetection.AutoSize = true;
+            this.cbForegroundDetection.Location = new System.Drawing.Point(501, 53);
+            this.cbForegroundDetection.Name = "cbForegroundDetection";
+            this.cbForegroundDetection.Size = new System.Drawing.Size(125, 17);
+            this.cbForegroundDetection.TabIndex = 19;
+            this.cbForegroundDetection.Text = "Deteksi Objek Gerak";
+            this.cbForegroundDetection.UseVisualStyleBackColor = true;
+            this.cbForegroundDetection.CheckedChanged += new System.EventHandler(this.cbForegroundDetection_CheckedChanged);
+            // 
+            // cbBlobDetection
+            // 
+            this.cbBlobDetection.AutoSize = true;
+            this.cbBlobDetection.Location = new System.Drawing.Point(501, 76);
+            this.cbBlobDetection.Name = "cbBlobDetection";
+            this.cbBlobDetection.Size = new System.Drawing.Size(86, 17);
+            this.cbBlobDetection.TabIndex = 20;
+            this.cbBlobDetection.Text = "Deteksi Blob";
+            this.cbBlobDetection.UseVisualStyleBackColor = true;
+            this.cbBlobDetection.CheckedChanged += new System.EventHandler(this.cbBlobDetection_CheckedChanged);
+            // 
+            // rbBGS
+            // 
+            this.rbBGS.AutoSize = true;
+            this.rbBGS.Location = new System.Drawing.Point(59, 12);
+            this.rbBGS.Name = "rbBGS";
+            this.rbBGS.Size = new System.Drawing.Size(47, 17);
+            this.rbBGS.TabIndex = 21;
+            this.rbBGS.TabStop = true;
+            this.rbBGS.Text = "BGS";
+            this.rbBGS.UseVisualStyleBackColor = true;
+            // 
+            // rbIntersect
+            // 
+            this.rbIntersect.AutoSize = true;
+            this.rbIntersect.Location = new System.Drawing.Point(190, 12);
+            this.rbIntersect.Name = "rbIntersect";
+            this.rbIntersect.Size = new System.Drawing.Size(66, 17);
+            this.rbIntersect.TabIndex = 22;
+            this.rbIntersect.TabStop = true;
+            this.rbIntersect.Text = "Intersect";
+            this.rbIntersect.UseVisualStyleBackColor = true;
+            // 
             // FormHandSlider
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(609, 421);
+            this.ClientSize = new System.Drawing.Size(634, 421);
+            this.Controls.Add(this.rbIntersect);
+            this.Controls.Add(this.rbBGS);
+            this.Controls.Add(this.cbBlobDetection);
+            this.Controls.Add(this.cbForegroundDetection);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.labelCountdown);
             this.Controls.Add(this.label2);
@@ -250,7 +291,6 @@
             this.Controls.Add(this.labelX1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.rbBlobDetection);
             this.Controls.Add(this.rbMorphology);
             this.Controls.Add(this.rbThreshold);
             this.Controls.Add(this.rbOriginal);
@@ -278,7 +318,6 @@
         private System.Windows.Forms.RadioButton rbOriginal;
         private System.Windows.Forms.RadioButton rbThreshold;
         private System.Windows.Forms.RadioButton rbMorphology;
-        private System.Windows.Forms.RadioButton rbBlobDetection;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label labelX1;
@@ -292,6 +331,10 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusLabelFPS;
         private System.Windows.Forms.ToolStripProgressBar statusProgressBar1;
+        private System.Windows.Forms.CheckBox cbForegroundDetection;
+        private System.Windows.Forms.CheckBox cbBlobDetection;
+        private System.Windows.Forms.RadioButton rbBGS;
+        private System.Windows.Forms.RadioButton rbIntersect;
     }
 }
 

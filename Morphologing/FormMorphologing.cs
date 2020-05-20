@@ -421,7 +421,7 @@ namespace Morphologing
                 }
                 else if (radioButton16.Checked)
                 {
-                    bitmap = opening.Apply(closing.Apply(bitmap));
+                    bitmap = opening.Apply(closing.Apply(median.Apply(bitmap)));
                 }
                 else if (radioButton17.Checked)
                 {
