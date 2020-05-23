@@ -33,7 +33,6 @@ namespace HandSlider
         private Intersect intersect;
         private List<int> sequenceCodeList;
         private Median median;
-        private NotifyIcon notifyIcon;
         private Opening opening;
         private Pen penRed, penGreen, penBlue;
         private Rectangle destinationRectangle, destinationRectangleBlob;
@@ -42,7 +41,7 @@ namespace HandSlider
         private ThresholdedDifference thresholdedDifference;
         private System.Timers.Timer timerFPS, timerFrame, timerLabel;
         private VideoCaptureDevice vcd;
-        private bool getFrame, closing, foregroundChecked, blobChecked, moveChecked;
+        private bool getFrame, foregroundChecked, blobChecked, moveChecked;
         private byte[] pixels;
         private double ye, cebe, ceer, ratio;
         private int actual;
@@ -70,9 +69,9 @@ namespace HandSlider
             median = new Median();
             notifyIcon = new NotifyIcon();
             opening = new Opening(new short[3, 3]);
-            penGreen = new Pen(Color.Green);
-            penRed = new Pen(Color.Red);
-            penBlue = new Pen(Color.Blue);
+            penGreen = new Pen(Color.Green, 3);
+            penRed = new Pen(Color.Red, 3);
+            penBlue = new Pen(Color.Blue, 3);
             sequenceCodeList = new List<int>(400);
             threshold = new Threshold(128);
             thresholdedDifference = new ThresholdedDifference(64);
@@ -115,9 +114,10 @@ namespace HandSlider
 
             imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
 
-            notifyIcon.Icon = SystemIcons.Application;
+            notifyIcon.Icon = new Icon(Icon, 40, 40);
             notifyIcon.Visible = true;
             notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon.MouseDoubleClick += notifyIcon_MouseDoubleClick;
 
             resetDetection();
 
@@ -153,6 +153,20 @@ namespace HandSlider
 
             // Training
             thread.Start();
+        }
+
+        private void FormHandSlider_Resize(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                Hide();
+            }
+        }
+
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Show();
+            WindowState = FormWindowState.Normal;
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -229,9 +243,6 @@ namespace HandSlider
             btnStop.Enabled = false;
 
             statusLabelFPS.Text = "0 FPS";
-
-            labelX1.Text = ": " + pointX1.ToString();
-            labelX2.Text = ": " + pointX2.ToString();
         }
 
         private void cbBlobDetection_CheckedChanged(object sender, EventArgs e)
@@ -290,6 +301,8 @@ namespace HandSlider
                 rbIntersect.Enabled = false;
                 rbMorphology.Enabled = false;
 
+                notifyIcon.Visible = true;
+
                 moveChecked = true;
             }
             else
@@ -300,19 +313,23 @@ namespace HandSlider
                 rbIntersect.Enabled = true;
                 rbMorphology.Enabled = true;
 
+                notifyIcon.Visible = false;
+
                 moveChecked = false;
             }
         }
 
         private void FormHandSlider_FormClosing(object sender, FormClosingEventArgs e)
         {
+            notifyIcon.Visible = false;
+            notifyIcon.Icon = null;
+
             if (vcd == null) { return; }
 
             vcd.NewFrame -= new NewFrameEventHandler(newFrame);
             vcd.Stop();
             vcd.SignalToStop();
-
-            closing = true;
+            
             timerFrame.Enabled = false;
             timerFrame.Stop();
             timerFrame.Dispose();
@@ -335,7 +352,7 @@ namespace HandSlider
             }
 
             // get diff foreground
-            if (foregroundChecked)
+            if (foregroundChecked && frameBackground != null)
             {
                 frameForeground = thresholdedDifference.Apply(frame.Clone() as Bitmap);
 
@@ -360,7 +377,7 @@ namespace HandSlider
             }
 
             // intersect to get foreground
-            if (foregroundChecked)
+            if (foregroundChecked && frameForeground != null)
             {
                 intersect.OverlayImage = frame.Clone() as Bitmap;
                 Console.WriteLine(frame.GetPixelFormatSize());
@@ -540,16 +557,12 @@ namespace HandSlider
                 }
             }
 
-            if (closing) { return; }
-
             //throw new NotImplementedException();
         }
 
         private void TimerLabel_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (!IsHandleCreated) { return; }
-
-            if (closing) { return; }
 
             Invoke(new Action(() =>
             {
@@ -689,6 +702,7 @@ namespace HandSlider
 
                 hand = blobPosition;
 
+                notifyIcon.Visible = true;
                 notifyIcon.BalloonTipText = "Tangan " + hand;
                 notifyIcon.ShowBalloonTip(duration / 5);
 
@@ -728,9 +742,6 @@ namespace HandSlider
             { return; }
 
             delay = 5000;
-
-            labelX1.Text = ": " + pointX1.ToString();
-            labelX2.Text = ": " + pointX2.ToString();
         }
 
         private void resetDetection()

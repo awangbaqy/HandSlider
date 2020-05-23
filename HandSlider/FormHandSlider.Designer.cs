@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormHandSlider));
             this.btnStart = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
@@ -36,13 +37,9 @@
             this.rbMorphology = new System.Windows.Forms.RadioButton();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.labelX1 = new System.Windows.Forms.Label();
-            this.labelX2 = new System.Windows.Forms.Label();
             this.pictureBoxBlob = new System.Windows.Forms.PictureBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cbMoveDetection = new System.Windows.Forms.CheckBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.labelCountdown = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusLabelFPS = new System.Windows.Forms.ToolStripStatusLabel();
@@ -51,6 +48,7 @@
             this.cbBlobDetection = new System.Windows.Forms.CheckBox();
             this.rbBGS = new System.Windows.Forms.RadioButton();
             this.rbIntersect = new System.Windows.Forms.RadioButton();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBlob)).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -61,7 +59,7 @@
             this.btnStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnStart.Location = new System.Drawing.Point(498, 12);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(60, 35);
+            this.btnStart.Size = new System.Drawing.Size(60, 60);
             this.btnStart.TabIndex = 1;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
@@ -72,7 +70,7 @@
             this.btnStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnStop.Location = new System.Drawing.Point(564, 12);
             this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(60, 35);
+            this.btnStop.Size = new System.Drawing.Size(60, 60);
             this.btnStop.TabIndex = 2;
             this.btnStop.Text = "Stop";
             this.btnStop.UseVisualStyleBackColor = true;
@@ -130,24 +128,6 @@
             this.label1.Text = "Menyiapkan Dataset...";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // labelX1
-            // 
-            this.labelX1.AutoSize = true;
-            this.labelX1.Location = new System.Drawing.Point(577, 131);
-            this.labelX1.Name = "labelX1";
-            this.labelX1.Size = new System.Drawing.Size(19, 13);
-            this.labelX1.TabIndex = 10;
-            this.labelX1.Text = ": 0";
-            // 
-            // labelX2
-            // 
-            this.labelX2.AutoSize = true;
-            this.labelX2.Location = new System.Drawing.Point(577, 157);
-            this.labelX2.Name = "labelX2";
-            this.labelX2.Size = new System.Drawing.Size(19, 13);
-            this.labelX2.TabIndex = 11;
-            this.labelX2.Text = ": 0";
-            // 
             // pictureBoxBlob
             // 
             this.pictureBoxBlob.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -163,14 +143,14 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(501, 279);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(74, 13);
+            this.label4.Size = new System.Drawing.Size(84, 13);
             this.label4.TabIndex = 13;
-            this.label4.Text = "Blob Tangan :";
+            this.label4.Text = "Blob Tangan V :";
             // 
             // cbMoveDetection
             // 
             this.cbMoveDetection.AutoSize = true;
-            this.cbMoveDetection.Location = new System.Drawing.Point(501, 99);
+            this.cbMoveDetection.Location = new System.Drawing.Point(498, 144);
             this.cbMoveDetection.Name = "cbMoveDetection";
             this.cbMoveDetection.Size = new System.Drawing.Size(106, 17);
             this.cbMoveDetection.TabIndex = 14;
@@ -178,28 +158,10 @@
             this.cbMoveDetection.UseVisualStyleBackColor = true;
             this.cbMoveDetection.CheckedChanged += new System.EventHandler(this.cbMoveDetection_CheckedChanged);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(498, 157);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(76, 13);
-            this.label2.TabIndex = 16;
-            this.label2.Text = "Titik Akhir (X2)";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(498, 131);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(75, 13);
-            this.label3.TabIndex = 15;
-            this.label3.Text = "Titik Awal (X1)";
-            // 
             // labelCountdown
             // 
             this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(504, 179);
+            this.labelCountdown.Location = new System.Drawing.Point(504, 164);
             this.labelCountdown.Name = "labelCountdown";
             this.labelCountdown.Size = new System.Drawing.Size(100, 100);
             this.labelCountdown.TabIndex = 17;
@@ -231,7 +193,7 @@
             // cbForegroundDetection
             // 
             this.cbForegroundDetection.AutoSize = true;
-            this.cbForegroundDetection.Location = new System.Drawing.Point(501, 53);
+            this.cbForegroundDetection.Location = new System.Drawing.Point(498, 98);
             this.cbForegroundDetection.Name = "cbForegroundDetection";
             this.cbForegroundDetection.Size = new System.Drawing.Size(125, 17);
             this.cbForegroundDetection.TabIndex = 19;
@@ -242,7 +204,7 @@
             // cbBlobDetection
             // 
             this.cbBlobDetection.AutoSize = true;
-            this.cbBlobDetection.Location = new System.Drawing.Point(501, 76);
+            this.cbBlobDetection.Location = new System.Drawing.Point(498, 121);
             this.cbBlobDetection.Name = "cbBlobDetection";
             this.cbBlobDetection.Size = new System.Drawing.Size(86, 17);
             this.cbBlobDetection.TabIndex = 20;
@@ -272,6 +234,14 @@
             this.rbIntersect.Text = "Intersect";
             this.rbIntersect.UseVisualStyleBackColor = true;
             // 
+            // notifyIcon
+            // 
+            this.notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.notifyIcon.BalloonTipTitle = "Hand Slider";
+            this.notifyIcon.Text = "notifyIcon1";
+            this.notifyIcon.Visible = true;
+            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
+            // 
             // FormHandSlider
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -282,13 +252,9 @@
             this.Controls.Add(this.cbForegroundDetection);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.labelCountdown);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.cbMoveDetection);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.pictureBoxBlob);
-            this.Controls.Add(this.labelX2);
-            this.Controls.Add(this.labelX1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.rbMorphology);
@@ -303,6 +269,7 @@
             this.Text = "Hand Slider";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormHandSlider_FormClosing);
             this.Load += new System.EventHandler(this.FormHandSlider_Load);
+            this.Resize += new System.EventHandler(this.FormHandSlider_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBlob)).EndInit();
             this.statusStrip1.ResumeLayout(false);
@@ -320,13 +287,9 @@
         private System.Windows.Forms.RadioButton rbMorphology;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label labelX1;
-        private System.Windows.Forms.Label labelX2;
         private System.Windows.Forms.PictureBox pictureBoxBlob;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox cbMoveDetection;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label labelCountdown;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusLabelFPS;
@@ -335,6 +298,7 @@
         private System.Windows.Forms.CheckBox cbBlobDetection;
         private System.Windows.Forms.RadioButton rbBGS;
         private System.Windows.Forms.RadioButton rbIntersect;
+        private System.Windows.Forms.NotifyIcon notifyIcon;
     }
 }
 
