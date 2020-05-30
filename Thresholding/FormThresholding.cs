@@ -36,8 +36,8 @@ namespace Thresholding
         {
             InitializeComponent();
 
-            destitationBitmap = new Bitmap(196, 144);
-            convertRectangle = destinationRectangle = new Rectangle(0, 0, 196, 144);
+            destitationBitmap = new Bitmap(480, 360);
+            convertRectangle = destinationRectangle = new Rectangle(0, 0, 480, 360);
 
             gammaCorrection = new GammaCorrection();
             grayWorld = new GrayWorld();
@@ -51,7 +51,7 @@ namespace Thresholding
             videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
             videoCaptureDevice.Start();
 
-            //moveTimer.Interval = 2000;
+            //moveTimer.Interval = 3000;
             //moveTimer.Tick += new EventHandler(moveTimer_Tick);
             //moveTimer.Start();
         }
@@ -182,11 +182,7 @@ namespace Thresholding
                     pictureBox2.Image = tt2.threshold_combined(bitmap.Clone() as Bitmap, 2);
                 }
 
-                lock (pictureBox3)
-                {
-                    pictureBox3.Image = tt3.threshold_combined(bitmap.Clone() as Bitmap, 3);
-                }
-
+                pictureBox3.Image = null;
                 pictureBox4.Image = null;
                 pictureBox5.Image = null;
                 pictureBox6.Image = null;
@@ -212,21 +208,9 @@ namespace Thresholding
                     pictureBox3.Image = tt3.threshold_final(bitmap.Clone() as Bitmap, 3);
                 }
 
-                lock (pictureBox4)
-                {
-                    pictureBox4.Image = tt4.threshold_final(bitmap.Clone() as Bitmap, 4);
-                }
-
-                lock (pictureBox5)
-                {
-                    pictureBox5.Image = tt5.threshold_final(bitmap.Clone() as Bitmap, 5);
-                }
-
-                lock (pictureBox6)
-                {
-                    pictureBox6.Image = tt6.threshold_final(bitmap.Clone() as Bitmap, 6);
-                }
-                
+                pictureBox4.Image = null;
+                pictureBox5.Image = null;
+                pictureBox6.Image = null;
                 pictureBox7.Image = null;
                 pictureBox8.Image = null;
                 pictureBox9.Image = null;
@@ -264,20 +248,20 @@ namespace Thresholding
         }
         
         private void moveTimer_Tick(object sender, System.EventArgs e)
-        {
-            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
-            Image image = Image.FromFile(images[counter]);
+        { 
+            //string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
+            //Image image = Image.FromFile(images[counter]);
 
-            testdata((Bitmap)image);
+            //testdata((Bitmap)image);
 
-            if (counter < images.Count() - 1)
-            {
-                counter = counter + 1;
-            }
-            else
-            {
-                counter = 0;
-            }
+            //if (counter < images.Count() - 1)
+            //{
+            //    counter = counter + 1;
+            //}
+            //else
+            //{
+            //    counter = 0;
+            //}
         }
 
         public void testdata(Bitmap bitmapInput)

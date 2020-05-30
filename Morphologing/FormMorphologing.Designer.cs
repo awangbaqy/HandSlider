@@ -76,6 +76,7 @@
             // 
             this.radioButton1.AutoSize = true;
             this.radioButton1.Checked = true;
+            this.radioButton1.Enabled = false;
             this.radioButton1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton1.Location = new System.Drawing.Point(498, 12);
             this.radioButton1.Name = "radioButton1";
@@ -88,6 +89,7 @@
             // radioButton2
             // 
             this.radioButton2.AutoSize = true;
+            this.radioButton2.Enabled = false;
             this.radioButton2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton2.Location = new System.Drawing.Point(498, 35);
             this.radioButton2.Name = "radioButton2";
@@ -99,6 +101,7 @@
             // radioButton3
             // 
             this.radioButton3.AutoSize = true;
+            this.radioButton3.Enabled = false;
             this.radioButton3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton3.Location = new System.Drawing.Point(498, 58);
             this.radioButton3.Name = "radioButton3";
@@ -110,6 +113,7 @@
             // radioButton4
             // 
             this.radioButton4.AutoSize = true;
+            this.radioButton4.Enabled = false;
             this.radioButton4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton4.Location = new System.Drawing.Point(498, 81);
             this.radioButton4.Name = "radioButton4";
@@ -121,6 +125,7 @@
             // radioButton5
             // 
             this.radioButton5.AutoSize = true;
+            this.radioButton5.Enabled = false;
             this.radioButton5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton5.Location = new System.Drawing.Point(498, 104);
             this.radioButton5.Name = "radioButton5";
@@ -132,6 +137,7 @@
             // radioButton6
             // 
             this.radioButton6.AutoSize = true;
+            this.radioButton6.Enabled = false;
             this.radioButton6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton6.Location = new System.Drawing.Point(498, 127);
             this.radioButton6.Name = "radioButton6";
@@ -154,6 +160,7 @@
             // radioButton8
             // 
             this.radioButton8.AutoSize = true;
+            this.radioButton8.Enabled = false;
             this.radioButton8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton8.Location = new System.Drawing.Point(498, 173);
             this.radioButton8.Name = "radioButton8";
@@ -165,6 +172,7 @@
             // radioButton9
             // 
             this.radioButton9.AutoSize = true;
+            this.radioButton9.Enabled = false;
             this.radioButton9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton9.Location = new System.Drawing.Point(498, 196);
             this.radioButton9.Name = "radioButton9";
@@ -187,6 +195,7 @@
             // radioButton11
             // 
             this.radioButton11.AutoSize = true;
+            this.radioButton11.Enabled = false;
             this.radioButton11.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton11.Location = new System.Drawing.Point(545, 35);
             this.radioButton11.Name = "radioButton11";
@@ -209,6 +218,7 @@
             // radioButton13
             // 
             this.radioButton13.AutoSize = true;
+            this.radioButton13.Enabled = false;
             this.radioButton13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton13.Location = new System.Drawing.Point(545, 81);
             this.radioButton13.Name = "radioButton13";
@@ -220,6 +230,7 @@
             // radioButton14
             // 
             this.radioButton14.AutoSize = true;
+            this.radioButton14.Enabled = false;
             this.radioButton14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton14.Location = new System.Drawing.Point(545, 104);
             this.radioButton14.Name = "radioButton14";
@@ -231,6 +242,7 @@
             // radioButton15
             // 
             this.radioButton15.AutoSize = true;
+            this.radioButton15.Enabled = false;
             this.radioButton15.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton15.Location = new System.Drawing.Point(545, 127);
             this.radioButton15.Name = "radioButton15";
@@ -242,6 +254,7 @@
             // radioButton16
             // 
             this.radioButton16.AutoSize = true;
+            this.radioButton16.Enabled = false;
             this.radioButton16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton16.Location = new System.Drawing.Point(545, 150);
             this.radioButton16.Name = "radioButton16";
@@ -253,6 +266,7 @@
             // radioButton17
             // 
             this.radioButton17.AutoSize = true;
+            this.radioButton17.Enabled = false;
             this.radioButton17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.radioButton17.Location = new System.Drawing.Point(545, 173);
             this.radioButton17.Name = "radioButton17";

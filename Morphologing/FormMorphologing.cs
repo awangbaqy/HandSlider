@@ -141,9 +141,9 @@ namespace Morphologing
             videoCaptureDevice.NewFrame += new NewFrameEventHandler(newFrame);
             videoCaptureDevice.Start();
 
-            //moveTimer.Interval = 1000;
-            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            //moveTimer.Start();
+            moveTimer.Interval = 5000;
+            moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            moveTimer.Start();
         }
 
         void newFrame(object sender, NewFrameEventArgs eventArgs)
@@ -323,19 +323,25 @@ namespace Morphologing
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
         {
-            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
-            Image image = Image.FromFile(images[counter]);
-            
-            testdata((Bitmap)image);
+            //if (radioButton18.Checked)
+            //{
+            //    Close();
+            //}
+            //SendKeys.Send("{RIGHT}");
 
-            if (counter < images.Count() - 1)
-            {
-                counter = counter + 1;
-            }
-            else
-            {
-                counter = 0;
-            }
+            //string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Ve", "*.jpg");
+            //Image image = Image.FromFile(images[counter]);
+
+            //testdata((Bitmap)image);
+
+            //if (counter < images.Count() - 1)
+            //{
+            //    counter = counter + 1;
+            //}
+            //else
+            //{
+            //    counter = 0;
+            //}
         }
 
         public void testdata(Bitmap bitmapInput)

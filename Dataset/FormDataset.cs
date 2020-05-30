@@ -76,8 +76,8 @@ namespace Dataset
             binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
             closingRadius10 = new Closing(kernelShortRadius10);
-            destinationBitmap = new Bitmap(20, 20);
-            destinationRectangle = new Rectangle(0, 0, 20, 20);
+            destinationBitmap = new Bitmap(150, 150);
+            destinationRectangle = new Rectangle(0, 0, 150, 150);
             gaborFilter = new GaborFilter();
             grayscale = Grayscale.CommonAlgorithms.BT709;
             grayscaleToRGB = new GrayscaleToRGB();
@@ -95,35 +95,68 @@ namespace Dataset
             //moveTimer.Tick += new EventHandler(moveTimer_Tick);
             //moveTimer.Start();
 
-            Console.WriteLine("F");
-            foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Flat", "*.jpg", SearchOption.AllDirectories))
+            //Console.WriteLine("F");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Flat", "*.jpg", SearchOption.AllDirectories))
             {
                 System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
                 pre_processing(image);
 
                 //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Flat\" + Path.GetFileName(item) + "_blob.jpg");
             }
-            Console.WriteLine("S");
-            foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Spread", "*.jpg", SearchOption.AllDirectories))
+            //Console.WriteLine("S");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Spread", "*.jpg", SearchOption.AllDirectories))
             {
                 System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
                 pre_processing(image);
 
                 //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Spread\" + Path.GetFileName(item) + "_blob.jpg");
             }
-            Console.WriteLine("V");
-            foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Ve", "*.jpg", SearchOption.AllDirectories))
+            //Console.WriteLine("V");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Ve", "*.jpg", SearchOption.AllDirectories))
             {
                 System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
                 pre_processing(image);
 
                 //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+            }
+
+            Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell");
+
+            //Console.WriteLine("F");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Flat", "*.jpg", SearchOption.AllDirectories))
+            {
+                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                pre_processing(image);
+
+                //returnedBitmap = pre_processing(image);
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+            }
+            //Console.WriteLine("S");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Spread", "*.jpg", SearchOption.AllDirectories))
+            {
+                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                pre_processing(image);
+
+                //returnedBitmap = pre_processing(image);
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+            }
+            //Console.WriteLine("V");
+            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Ve", "*.jpg", SearchOption.AllDirectories))
+            {
+                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                pre_processing(image);
+
+                //returnedBitmap = pre_processing(image);
+                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Ve\" + Path.GetFileName(item) + "_blob.jpg");
             }
 
             Close();
@@ -527,27 +560,27 @@ namespace Dataset
 
             blobCounter.ProcessImage(resultMorphologing);
             resultBlobing = new ExtractBiggestBlob().Apply(resultMorphologing);
-            double ratio = Convert.ToDouble(resultBlobing.Height) / Convert.ToDouble(resultBlobing.Width);
-            Console.WriteLine(ratio.ToString("F5").TrimEnd('0'));
-            //pictureBox4.Image = resultBlobing.Clone() as Bitmap;
+            //double ratio = Convert.ToDouble(resultBlobing.Height) / Convert.ToDouble(resultBlobing.Width);
+            //Console.WriteLine(ratio.ToString("F5").TrimEnd('0'));
+            pictureBox4.Image = resultBlobing.Clone() as Bitmap;
 
-            //resultResizing = resizing(resultBlobing);
-            //pictureBox5.Image = resultResizing.Clone() as Bitmap;
+            resultResizing = resizing(resultBlobing);
+            pictureBox5.Image = resultResizing.Clone() as Bitmap;
 
-            //resultBinaring = threshold.Apply(grayscale.Apply(resultResizing));
-            //pictureBox6.Image = resultBinaring.Clone() as Bitmap;
+            resultBinaring = threshold.Apply(grayscale.Apply(resultResizing));
+            pictureBox6.Image = resultBinaring.Clone() as Bitmap;
 
-            //str = code(resultBinaring);
-            //for (int i = 1; i < (resultBinaring.Width * resultBinaring.Height * 2) - 1; i++)
-            //{
-            //    if (i % 2 != 0)
-            //    {
-            //        str = str.Insert(i, "-");
-            //    }
-            //}
-            //textBox1.Text = str;
+            str = code(resultBinaring);
+            for (int i = 1; i < (resultBinaring.Width * resultBinaring.Height * 2) - 1; i++)
+            {
+                if (i % 2 != 0)
+                {
+                    str = str.Insert(i, "-");
+                }
+            }
+            textBox1.Text = str;
 
-            //Console.WriteLine(str);
+            Console.WriteLine(str);
 
             //return resultBlobing;
         }
