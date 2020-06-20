@@ -35,6 +35,7 @@ namespace HandSlider
         private Median median;
         private Opening opening;
         private Pen penRed, penGreen, penBlue;
+        Point point;
         private Rectangle destinationRectangle, destinationRectangleBlob;
         private Thread thread;
         private Threshold threshold;
@@ -48,7 +49,7 @@ namespace HandSlider
         private int b, i, j, x, y;
         private int bytesPerPixel, byteCount, heightInPixels, widthInBytes, currentLine;
         private int oldBlue, oldGreen, oldRed;
-        private int pointX, pointX1, pointX2, blobHeight, blobWidth, travel;
+        private int pointX1, pointX2, pointY1, pointY2, blobHeight, blobWidth, travelX, travelY;
         private int fps, durationElapsed, delay, timerFrameInterval, duration;
         private string blobPosition, label, hand;
 
@@ -69,6 +70,7 @@ namespace HandSlider
             median = new Median();
             notifyIcon = new NotifyIcon();
             opening = new Opening(new short[3, 3]);
+            point = new Point(0, 0);
             penGreen = new Pen(Color.Green, 3);
             penRed = new Pen(Color.Red, 3);
             penBlue = new Pen(Color.Blue, 3);
@@ -465,7 +467,8 @@ namespace HandSlider
 
                 if (ratio < 1.7 || 2.5 < ratio) { continue; }
 
-                pointX = Convert.ToInt16(blobs[b].CenterOfGravity.X);
+                point.X = Convert.ToInt16(blobs[b].CenterOfGravity.X);
+                point.Y = Convert.ToInt16(blobs[b].CenterOfGravity.Y);
 
                 if (hand.Equals("KIRI"))
                 {
@@ -477,7 +480,7 @@ namespace HandSlider
                 }
                 else
                 {
-                    if (pointX <= frameBlobs.Width / 2)
+                    if (point.X <= frameBlobs.Width / 2)
                     {
                         bitmapBlob.RotateFlip(RotateFlipType.Rotate90FlipNone); // left-handed
                         blobPosition = "KIRI";
@@ -509,7 +512,7 @@ namespace HandSlider
 
                 if (moveChecked && label.Equals("V"))
                 {
-                    moving(pointX, bitmapBlob.Height, bitmapBlob.Width);
+                    moving(point, bitmapBlob.Height, bitmapBlob.Width);
                 }
             }
 
@@ -694,9 +697,9 @@ namespace HandSlider
             return hmmc.Models[actual].Tag as string;
         }
 
-        private void moving(int xCoordinate, int bitmapHeight, int bitmapWidth)
+        private void moving(Point point, int bitmapHeight, int bitmapWidth)
         {
-            if (pointX1 == 0)
+            if (pointX1 == 0 && pointY1 == 0)
             {
                 duration = 5000;
 
@@ -706,7 +709,8 @@ namespace HandSlider
                 notifyIcon.BalloonTipText = "Tangan " + hand;
                 notifyIcon.ShowBalloonTip(duration / 5);
 
-                pointX1 = xCoordinate;
+                pointX1 = point.X;
+                pointY1 = point.Y;
 
                 blobHeight = bitmapWidth;
                 blobWidth = bitmapHeight;
@@ -714,33 +718,51 @@ namespace HandSlider
                 return;
             }
 
-            pointX2 = xCoordinate;
-            //Console.WriteLine(blobHeight + "h:w" + blobWidth + " > " + bitmapWidth + "h:w" + bitmapHeight + " >>> " + pointX1 + " - " + pointX2 + " = " + (pointX1 - pointX2));
+            pointX2 = point.X;
+            pointY2 = point.Y;
+            //Console.WriteLine(blobHeight + "h:w" + blobWidth + " > " + bitmapWidth + "h:w" + bitmapHeight + " >>> ");
+            //Console.WriteLine(pointX1 + " - " + pointX2 + " = " + (pointX1 - pointX2));
+            //Console.WriteLine(pointY1 + " - " + pointY2 + " = " + (pointY1 - pointY2));
             if (bitmapWidth < blobHeight - 15 || blobHeight + 15 < bitmapWidth)
             { return; }
 
             if (bitmapHeight < blobWidth - 30 || blobWidth + 30 < bitmapHeight)
             { return; }
 
-            travel = pointX1 - pointX2;
+            travelX = pointX1 - pointX2;
+            travelY = pointY1 - pointY2;
 
-            if (hand.Equals("KANAN") && blobWidth / 2 < travel && travel < blobWidth * 2)
+            if (hand.Equals("KANAN") && blobWidth / 2 < travelX && travelX < blobWidth * 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KIRI";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
                 SendKeys.Send("{RIGHT}");
             }
-            else if (hand.Equals("KIRI") && -blobWidth * 2 < travel && travel < -blobWidth / 2)
+            else if (hand.Equals("KIRI") && -blobWidth * 2 < travelX && travelX < -blobWidth / 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KANAN";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
                 SendKeys.Send("{LEFT}");
             }
+            else if (-blobHeight * 2 < travelY && travelY < -blobHeight / 2)
+            {
+                notifyIcon.BalloonTipText = "Gerakan KE ATAS";
+                notifyIcon.ShowBalloonTip(duration / 5);
+
+                SendKeys.Send("{HOME}");
+            }
+            else if (blobHeight / 2 < travelY && travelY < blobHeight * 2)
+            {
+                notifyIcon.BalloonTipText = "Gerakan KE BAWAH";
+                notifyIcon.ShowBalloonTip(duration / 5);
+
+                SendKeys.Send("{END}");
+            }
             else
             { return; }
-
+            
             delay = 5000;
         }
 
@@ -750,7 +772,7 @@ namespace HandSlider
             durationElapsed = 0;
             delay = 0;
 
-            blobHeight = blobWidth = pointX1 = pointX2 = 0;
+            blobHeight = blobWidth = pointX1 = pointX2 = pointY1 = pointY2 = 0;
             hand = "NETRAL";
         }
 
