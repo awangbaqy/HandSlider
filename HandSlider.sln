@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thresholding", "Thresholdin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Morphologing", "Morphologing\Morphologing.csproj", "{163D25D8-F0F3-4980-9F3A-B54F81C4077A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Centroiding", "Centroiding\Centroiding.csproj", "{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sequences (HMM)", "Statistics\Sequences (HMM)\Sequences (HMM).csproj", "{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}"
 EndProject
 Global
@@ -55,14 +53,6 @@ Global
 		{163D25D8-F0F3-4980-9F3A-B54F81C4077A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{163D25D8-F0F3-4980-9F3A-B54F81C4077A}.Release|x86.ActiveCfg = Release|Any CPU
 		{163D25D8-F0F3-4980-9F3A-B54F81C4077A}.Release|x86.Build.0 = Release|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Debug|x86.Build.0 = Debug|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Release|x86.ActiveCfg = Release|Any CPU
-		{51BB50A7-4B44-4F82-8213-DC003ADEA1D8}.Release|x86.Build.0 = Release|Any CPU
 		{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}.Debug|x86.ActiveCfg = Debug|x86

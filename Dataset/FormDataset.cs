@@ -91,75 +91,75 @@ namespace Dataset
 
         private void FormDataset_Load(object sender, EventArgs e)
         {
-            //moveTimer.Interval = 1500;
-            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            //moveTimer.Start();
+            moveTimer.Interval = 1500;
+            moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            moveTimer.Start();
 
-            //Console.WriteLine("F");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Flat", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            ////Console.WriteLine("F");
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Flat", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Flat\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            //Console.WriteLine("S");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Spread", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
+            ////Console.WriteLine("S");
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Spread", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Spread\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            //Console.WriteLine("V");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Ve", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
+            ////Console.WriteLine("V");
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Ve", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Ve\" + Path.GetFileName(item) + "_blob.jpg");
-            }
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
 
-            Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell");
+            //Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell");
 
-            //Console.WriteLine("F");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Flat", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            ////Console.WriteLine("F");
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Flat", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Flat\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            //Console.WriteLine("S");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Spread", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
+            ////Console.WriteLine("S");
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Spread", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Spread\" + Path.GetFileName(item) + "_blob.jpg");
-            }
-            //Console.WriteLine("V");
-            foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Ve", "*.jpg", SearchOption.AllDirectories))
-            {
-                System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
+            ////Console.WriteLine("V");
+            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Ve", "*.jpg", SearchOption.AllDirectories))
+            //{
+            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-                pre_processing(image);
+            //    pre_processing(image);
 
-                //returnedBitmap = pre_processing(image);
-                //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Ve\" + Path.GetFileName(item) + "_blob.jpg");
-            }
+            //    //returnedBitmap = pre_processing(image);
+            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+            //}
 
-            Close();
+            //Close();
 
             pictureBox3.SuspendLayout();
             pictureBox3.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox3_Paint);
@@ -168,7 +168,7 @@ namespace Dataset
 
         private void moveTimer_Tick(object sender, System.EventArgs e)
         {
-            string[] images = Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Ve", "*.jpg");
+            string[] images = Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Ve", "*.jpg");
             System.Drawing.Image image = System.Drawing.Image.FromFile(images[counter]);
             pre_processing(image);
 

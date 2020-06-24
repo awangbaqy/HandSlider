@@ -161,6 +161,10 @@ namespace HandSlider
         {
             if (WindowState == FormWindowState.Minimized)
             {
+                notifyIcon.Visible = true;
+                notifyIcon.BalloonTipText = "Aplikasi tersimpan di TRAY";
+                notifyIcon.ShowBalloonTip(duration / 5);
+
                 Hide();
             }
         }
@@ -737,28 +741,28 @@ namespace HandSlider
                 notifyIcon.BalloonTipText = "Gerakan KE KIRI";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
-                SendKeys.Send("{RIGHT}");
+                SendKeys.Send("{DOWN}");
             }
             else if (hand.Equals("KIRI") && -blobWidth * 2 < travelX && travelX < -blobWidth / 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KANAN";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
-                SendKeys.Send("{LEFT}");
+                SendKeys.Send("{UP}");
             }
             else if (-blobHeight * 2 < travelY && travelY < -blobHeight / 2)
-            {
-                notifyIcon.BalloonTipText = "Gerakan KE ATAS";
-                notifyIcon.ShowBalloonTip(duration / 5);
-
-                SendKeys.Send("{HOME}");
-            }
-            else if (blobHeight / 2 < travelY && travelY < blobHeight * 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE BAWAH";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
                 SendKeys.Send("{END}");
+            }
+            else if (blobHeight / 2 < travelY && travelY < blobHeight * 2)
+            {
+                notifyIcon.BalloonTipText = "Gerakan KE ATAS";
+                notifyIcon.ShowBalloonTip(duration / 5);
+
+                SendKeys.Send("{HOME}"); 
             }
             else
             { return; }
