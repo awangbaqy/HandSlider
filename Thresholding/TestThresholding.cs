@@ -449,8 +449,11 @@ namespace Thresholding
 
                     else if (
                         method == 2 &&
-                        ((0 < hue && hue < 50) || (250 < hue && hue < 360)) &&
-                        saturation < 0.9 && value <= 0.95
+                        (
+                         (0 < (hue / 360) && (hue / 360) < 0.24) ||
+                         (0.74 < (hue / 360) && (hue / 360) < 1)
+                        ) &&
+                        0.16 < saturation && saturation < 0.79
                        )
                     {
                         skin = true;

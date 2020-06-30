@@ -150,9 +150,10 @@
             // cbMoveDetection
             // 
             this.cbMoveDetection.AutoSize = true;
+            this.cbMoveDetection.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cbMoveDetection.Location = new System.Drawing.Point(498, 144);
             this.cbMoveDetection.Name = "cbMoveDetection";
-            this.cbMoveDetection.Size = new System.Drawing.Size(106, 17);
+            this.cbMoveDetection.Size = new System.Drawing.Size(121, 17);
             this.cbMoveDetection.TabIndex = 14;
             this.cbMoveDetection.Text = "Deteksi Gerakan";
             this.cbMoveDetection.UseVisualStyleBackColor = true;
@@ -161,9 +162,9 @@
             // labelCountdown
             // 
             this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 50F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCountdown.Location = new System.Drawing.Point(504, 164);
+            this.labelCountdown.Location = new System.Drawing.Point(512, 164);
             this.labelCountdown.Name = "labelCountdown";
-            this.labelCountdown.Size = new System.Drawing.Size(100, 100);
+            this.labelCountdown.Size = new System.Drawing.Size(110, 100);
             this.labelCountdown.TabIndex = 17;
             this.labelCountdown.Text = "0";
             this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -193,7 +194,7 @@
             // cbForegroundDetection
             // 
             this.cbForegroundDetection.AutoSize = true;
-            this.cbForegroundDetection.Location = new System.Drawing.Point(498, 98);
+            this.cbForegroundDetection.Location = new System.Drawing.Point(498, 91);
             this.cbForegroundDetection.Name = "cbForegroundDetection";
             this.cbForegroundDetection.Size = new System.Drawing.Size(125, 17);
             this.cbForegroundDetection.TabIndex = 19;
@@ -204,7 +205,7 @@
             // cbBlobDetection
             // 
             this.cbBlobDetection.AutoSize = true;
-            this.cbBlobDetection.Location = new System.Drawing.Point(498, 121);
+            this.cbBlobDetection.Location = new System.Drawing.Point(498, 114);
             this.cbBlobDetection.Name = "cbBlobDetection";
             this.cbBlobDetection.Size = new System.Drawing.Size(86, 17);
             this.cbBlobDetection.TabIndex = 20;

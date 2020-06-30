@@ -35,7 +35,7 @@ namespace HandSlider
         private Median median;
         private Opening opening;
         private Pen penRed, penGreen, penBlue;
-        Point point;
+        private Point point;
         private Rectangle destinationRectangle, destinationRectangleBlob;
         private Thread thread;
         private Threshold threshold;
@@ -301,6 +301,13 @@ namespace HandSlider
 
             if (cbMoveDetection.Checked)
             {
+                if (!cbForegroundDetection.Checked)
+                {
+                    MessageBox.Show("Harap Centang Deteksi Objek Gerak!");
+                    cbMoveDetection.Checked = false;
+                    return;
+                }
+
                 rbOriginal.Enabled = false;
                 rbBGS.Enabled = false;
                 rbThreshold.Enabled = false;
@@ -335,7 +342,7 @@ namespace HandSlider
             vcd.NewFrame -= new NewFrameEventHandler(newFrame);
             vcd.Stop();
             vcd.SignalToStop();
-            
+
             timerFrame.Enabled = false;
             timerFrame.Stop();
             timerFrame.Dispose();
@@ -469,7 +476,7 @@ namespace HandSlider
                 //ratio = Convert.ToDouble(bitmapBlob.Height) / Convert.ToDouble(bitmapBlob.Width); // vertical horizontal
                 ratio = Convert.ToDouble(bitmapBlob.Width) / Convert.ToDouble(bitmapBlob.Height);
 
-                if (ratio < 1.7 || 2.5 < ratio) { continue; }
+                if (ratio < 1.25 || 3.0 < ratio) { continue; }
 
                 point.X = Convert.ToInt16(blobs[b].CenterOfGravity.X);
                 point.Y = Convert.ToInt16(blobs[b].CenterOfGravity.Y);
@@ -762,11 +769,11 @@ namespace HandSlider
                 notifyIcon.BalloonTipText = "Gerakan KE ATAS";
                 notifyIcon.ShowBalloonTip(duration / 5);
 
-                SendKeys.Send("{HOME}"); 
+                SendKeys.Send("{HOME}");
             }
             else
             { return; }
-            
+
             delay = 5000;
         }
 
