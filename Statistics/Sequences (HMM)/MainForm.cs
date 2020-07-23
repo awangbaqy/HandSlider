@@ -50,8 +50,8 @@ namespace Sequences.HMMs
     public partial class MainForm : Form
     {
         bool switching;
-        haemem haemem;
         HiddenMarkovClassifier hmmc;
+        HaeMeM haeMeM;
 
         /// <summary>
         ///   Creates the ensemble
@@ -59,6 +59,7 @@ namespace Sequences.HMMs
         private void btnCreate_Click(object sender, EventArgs e)
         {
             buat(); return;
+
             switching = false;
 
             DataTable source = dgvSequenceSource.DataSource as DataTable;
@@ -103,6 +104,8 @@ namespace Sequences.HMMs
 
         private void buat()
         {
+            switching = true;
+
             DataTable source = dgvSequenceSource.DataSource as DataTable;
 
             if (source == null)
@@ -125,26 +128,25 @@ namespace Sequences.HMMs
             {
                 // Gets the label name
                 categories[i] = k.Rows[i]["Label"] as string;
-
+                
                 // Gets the number of states to recognize each label
                 states[i] = int.Parse(k.Rows[i]["States"] as string);
             }
-            haemem = new haemem();
-            haemem.haememce(classes, states, 2, categories); // 2 symbols
-            
-            switching = true;
+
+            haeMeM = new HaeMeM(classes, states, 2); // 2 symbols
 
             // Show the untrained model onscreen
-            //dgvModels.DataSource = hmmc.Models;
-            //dgvModels.Rows.Clear();
+
             for (int i = 0; i < categories.Length; i++)
             {
                 dgvModels.Rows.Add(categories[i], states[i]);
             }
 
-            //getHaememMatrix();
+            //dgvModels.DataSource = haeMeM.mModels;
+
+            getHiMaMo();
         }
-        
+
         /// <summary>
         ///   Trains the hidden Markov classifier
         /// </summary>
@@ -209,7 +211,7 @@ namespace Sequences.HMMs
             // Update the GUI
             dgvModels_CurrentCellChanged(this, EventArgs.Empty);
 
-            getHMMC();
+            //getHMMC();
         }
 
         private void latih()
@@ -239,7 +241,8 @@ namespace Sequences.HMMs
 
                 // Extract the sequence and the expected label for it
                 sequences[i] = decode(row["Sequences"] as string);
-                //labels[i] = hmmc.Models.Find(x => x.Tag as string == label)[0];
+                
+                labels[i] = label == "F" ? 0 : label == "S" ? 1 : 2;
             }
 
             // Grab training parameters
@@ -255,24 +258,13 @@ namespace Sequences.HMMs
                 iterations = 0;
             }
 
-            // Create a new hidden Markov model learning algorithm
-            //var teacher = new HiddenMarkovClassifierLearning(hmmc, i =>
-            //{
-            //    return new BaumWelchLearning(hmmc.Models[i])
-            //    {
-            //        MaxIterations = iterations,
-            //        Tolerance = limit
-            //    };
-            //});
-
             // Learn the classifier
-            //teacher.Learn(sequences, labels);
-            haemem.learning(sequences, iterations);
+            haeMeM.Learn(sequences, labels, iterations);
 
             // Update the GUI
             dgvModels_CurrentCellChanged(this, EventArgs.Empty);
-
-            //getHaemem();
+            
+            getHiMaMo();
         }
 
         /// <summary>
@@ -280,6 +272,7 @@ namespace Sequences.HMMs
         /// </summary>
         private void btnTest_Click(object sender, EventArgs e)
         {
+            uji(); return;
             //setHMMC();
 
             int wrong_total, right_total, f_total, ff, fs, fv, s_total, sf, ss, sv, v_total, vf, vs, vv;
@@ -305,10 +298,10 @@ namespace Sequences.HMMs
                 // Get the label associated with this sequence
                 string label = row.Cells["colTestTrueClass"].Value as string;
                 expected[i] = hmmc.Models.Find(x => x.Tag as string == label)[0];
-                
+
                 // Compute the model output for this sequence and its likelihood.
                 double likelihood = hmmc.LogLikelihood(sequence, out actual[i]);
-                
+
                 row.Cells["colTestAssignedClass"].Value = hmmc.Models[actual[i]].Tag as string;
                 row.Cells["colTestLikelihood"].Value = likelihood;
                 row.Cells["colTestMatch"].Value = actual[i] == expected[i];
@@ -342,10 +335,86 @@ namespace Sequences.HMMs
                     if (expect.Equals("V")) {vv += 1; }
                 }
             }
-            
+
             // Use confusion matrix to compute some performance metrics
             dgvPerformance.DataSource = new[] { new GeneralConfusionMatrix(hmmc.NumberOfClasses, actual, expected) };
-            
+
+            MessageBox.Show(
+                    "benar = " + right_total + " salah = " + wrong_total + "\n" +
+                    "-===- \n" +
+                    "F = " + f_total + " > F = " + ff + " / S = " + fs + " / V = " + fv + "\n" +
+                    "S = " + s_total + " > F = " + sf + " / S = " + ss + " / V = " + sv + "\n" +
+                    "V = " + v_total + " > F = " + vf + " / S = " + vs + " / V = " + vv
+                );
+        }
+
+        private void uji()
+        {
+            //setHiMaMo();
+
+            int wrong_total, right_total, f_total, ff, fs, fv, s_total, sf, ss, sv, v_total, vf, vs, vv;
+            wrong_total = right_total = f_total = ff = fs = fv = s_total = sf = ss = sv = v_total = vf = vs = vv = 0;
+
+            int rows = dgvTesting.Rows.Count - 1;
+
+            int[] expected = new int[rows];
+            int[] actual = new int[rows];
+
+            // Gets the input sequences
+            int[][] sequences = new int[rows][];
+
+            // For each row in the testing data
+            for (int i = 0; i < rows; i++)
+            {
+                // Get the row at the current index
+                DataGridViewRow row = dgvTesting.Rows[i];
+
+                // Get the training sequence to feed the model
+                int[] sequence = decode(row.Cells["colTestSequence"].Value as string);
+
+                // Get the label associated with this sequence
+                int label = row.Cells["colTestTrueClass"].Value as string == "F" ? 0 : row.Cells["colTestTrueClass"].Value as string == "S" ? 1 : 2;
+                
+                expected[i] = label;
+
+                // Compute the model output for this sequence and its likelihood.
+                double[] likelihood;
+                actual[i] = haeMeM.Compute(sequence, out likelihood);
+
+                row.Cells["colTestAssignedClass"].Value = actual[i];
+                row.Cells["colTestLikelihood"].Value = likelihood[0];
+                row.Cells["colTestMatch"].Value = actual[i] == expected[i];
+
+                if (actual[i] == expected[i]) { right_total += 1; }
+                if (actual[i] != expected[i]) { wrong_total += 1; }
+
+                string expect = row.Cells["colTestAssignedClass"].Value.ToString();
+
+                if (label == 0)
+                {
+                    f_total += 1;
+                    if (expect.Equals("0")) { ff += 1; }
+                    if (expect.Equals("1")) { fs += 1; }
+                    if (expect.Equals("2")) { fv += 1; }
+                }
+
+                if (label == 1)
+                {
+                    s_total += 1;
+                    if (expect.Equals("0")) { sf += 1; }
+                    if (expect.Equals("1")) { ss += 1; }
+                    if (expect.Equals("2")) { sv += 1; }
+                }
+
+                if (label == 2)
+                {
+                    v_total += 1;
+                    if (expect.Equals("0")) { vf += 1; }
+                    if (expect.Equals("1")) { vs += 1; }
+                    if (expect.Equals("2")) { vv += 1; }
+                }
+            }
+
             MessageBox.Show(
                     "benar = " + right_total + " salah = " + wrong_total + "\n" +
                     "-===- \n" +
@@ -428,25 +497,28 @@ namespace Sequences.HMMs
             if (switching)
             {
                 int classeses = 0;
-                if (dgvModels.CurrentRow.Cells[0].Value.ToString()=="F")
+                if (dgvModels.CurrentRow == null || dgvModels.CurrentRow.Cells[0].Value == null) { return; }
+                if (dgvModels.CurrentRow.Cells[0].Value.ToString() == "F")
                 {
                     classeses = 0;
                 }
-                else if (dgvModels.CurrentRow.Cells[0].Value.ToString() == "S")
+                if (dgvModels.CurrentRow.Cells[0].Value.ToString() == "S")
                 {
                     classeses = 1;
                 }
-                else
+                if (dgvModels.CurrentRow.Cells[0].Value.ToString() == "V")
                 {
                     classeses = 2;
                 }
-                dgvProbabilities.DataSource = new ArrayDataView(haemem.initialModel[classeses]);
-                dgvEmissions.DataSource = new ArrayDataView(haemem.emissionModel[classeses]);
-                dgvTransitions.DataSource = new ArrayDataView(haemem.transitionModel[classeses]);
+
+                //var model = dgvModels.CurrentRow.DataBoundItem as ModelHMM;
+                dgvProbabilities.DataSource = new ArrayDataView(haeMeM.mModels[classeses].mLogProbabilityVector);
+                dgvEmissions.DataSource = new ArrayDataView(toJaggedArray(haeMeM.mModels[classeses].mLogEmissionMatrix));
+                dgvTransitions.DataSource = new ArrayDataView(toJaggedArray(haeMeM.mModels[classeses].mLogTransitionMatrix));
 
                 return;
             }
-
+            
             if (dgvModels.CurrentRow != null)
             {
                 var model = dgvModels.CurrentRow.DataBoundItem as HiddenMarkovModel;
@@ -492,6 +564,114 @@ namespace Sequences.HMMs
             dgvTesting.DataSource = null;
             dgvTesting.Rows.Clear();
             dgvTesting.Refresh();
+        }
+
+        ///
+
+        private double[][] toJaggedArray(double[,] obj2D)
+        {
+            // Take my 2D array and cast it as a 1D array
+            double[] obj1D = ((double[,])obj2D).Cast<double>().ToArray();
+
+            // using linq, chunk the 1D array back into a jagged array
+            Int32 j = 0;
+            double[][] jagged = obj1D.GroupBy(x => j++ / obj2D.GetLength(1)).Select(y => y.ToArray()).ToArray();
+
+            return jagged;
+        }
+
+        private void getHmmcMatrix()
+        {
+            for (int i = 0; i < hmmc.Models.Length; i++)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Initial : ");
+
+                for (int j = 0; j < hmmc.Models[i].LogInitial.Length; j++)
+                {
+                    Console.WriteLine(hmmc.Models[i].LogInitial[j].ToString("F99").TrimEnd('0'));
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Emissions : ");
+
+                for (int j = 0; j < hmmc.Models[i].LogEmissions.Length; j++)
+                {
+                    Console.WriteLine("Baris : " + j);
+
+                    for (int ke = 0; ke < hmmc.Models[i].LogEmissions[j].Length; ke++)
+                    {
+                        Console.WriteLine(hmmc.Models[i].LogEmissions[j][ke]);
+                    }
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Transitions : ");
+
+                for (int j = 0; j < hmmc.Models[i].LogTransitions.Length; j++)
+                {
+                    Console.WriteLine("Baris : " + j);
+
+                    for (int ke = 0; ke < hmmc.Models[i].LogTransitions[j].Length; ke++)
+                    {
+                        Console.WriteLine(hmmc.Models[i].LogTransitions[j][ke]);
+                    }
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        private void setMatrix()
+        {
+            // set forward topology
+            // F
+            hmmc.Models[0].LogInitial[0] = 0;
+            hmmc.Models[0].LogInitial[1] = double.NegativeInfinity;
+
+            hmmc.Models[0].LogEmissions[0][0] = -0.693147180559945;
+            hmmc.Models[0].LogEmissions[0][1] = -0.693147180559945;
+
+            hmmc.Models[0].LogEmissions[1][0] = -0.693147180559945;
+            hmmc.Models[0].LogEmissions[1][1] = -0.693147180559945;
+
+            hmmc.Models[0].LogTransitions[0][0] = -0.693147180559945;
+            hmmc.Models[0].LogTransitions[0][1] = -0.693147180559945;
+
+            hmmc.Models[0].LogTransitions[1][0] = -0.693147180559945;
+            hmmc.Models[0].LogTransitions[1][1] = -0.693147180559945;
+
+            // S
+            hmmc.Models[1].LogInitial[0] = 0;
+            hmmc.Models[1].LogInitial[1] = double.NegativeInfinity;
+
+            hmmc.Models[1].LogEmissions[0][0] = -0.693147180559945;
+            hmmc.Models[1].LogEmissions[0][1] = -0.693147180559945;
+
+            hmmc.Models[1].LogEmissions[1][0] = -0.693147180559945;
+            hmmc.Models[1].LogEmissions[1][1] = -0.693147180559945;
+
+            hmmc.Models[1].LogTransitions[0][0] = -0.693147180559945;
+            hmmc.Models[1].LogTransitions[0][1] = -0.693147180559945;
+
+            hmmc.Models[1].LogTransitions[1][0] = -0.693147180559945;
+            hmmc.Models[1].LogTransitions[1][1] = -0.693147180559945;
+
+            // V
+            hmmc.Models[2].LogInitial[0] = 0;
+            hmmc.Models[2].LogInitial[1] = double.NegativeInfinity;
+
+            hmmc.Models[2].LogEmissions[0][0] = -0.693147180559945;
+            hmmc.Models[2].LogEmissions[0][1] = -0.693147180559945;
+
+            hmmc.Models[2].LogEmissions[1][0] = -0.693147180559945;
+            hmmc.Models[2].LogEmissions[1][1] = -0.693147180559945;
+
+            hmmc.Models[2].LogTransitions[0][0] = -0.693147180559945;
+            hmmc.Models[2].LogTransitions[0][1] = -0.693147180559945;
+
+            hmmc.Models[2].LogTransitions[1][0] = -0.693147180559945;
+            hmmc.Models[2].LogTransitions[1][1] = -0.693147180559945;
         }
 
         private void getHMMC()
@@ -551,48 +731,6 @@ namespace Sequences.HMMs
             }
         }
 
-        private void getHaemem()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Initial : ");
-
-                for (int j = 0; j < haemem.initialModel[i].Length; j++)
-                {
-                    Console.WriteLine(haemem.initialModel[i][j].ToString("F99").TrimEnd('0'));
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Emissions : ");
-
-                for (int j = 0; j < haemem.emissionModel[i].Length; j++)
-                {
-                    Console.WriteLine("Baris : " + j);
-
-                    for (int k = 0; k < haemem.emissionModel[i][j].Length; k++)
-                    {
-                        Console.WriteLine(haemem.emissionModel[i][j][k]);
-                    }
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Transitions : ");
-
-                for (int j = 0; j < haemem.transitionModel[i].Length; j++)
-                {
-                    Console.WriteLine("Baris : " + j);
-
-                    for (int k = 0; k < haemem.transitionModel[i][j].Length; k++)
-                    {
-                        Console.WriteLine(haemem.transitionModel[i][j][k]);
-                    }
-                }
-
-                Console.WriteLine();
-            }
-        }
-
         private void setHMMC()
         {
             // set ergodic topology
@@ -601,7 +739,7 @@ namespace Sequences.HMMs
             int[] states = new int[] { 2, 2, 2 };
 
             hmmc = new HiddenMarkovClassifier(classes, states, 3, categories);
-            
+
             hmmc.NumberOfClasses = 3;
             hmmc.NumberOfInputs = 0;
             hmmc.NumberOfOutputs = 3;
@@ -618,7 +756,7 @@ namespace Sequences.HMMs
             // F
             hmmc.Models[0].LogInitial[0] = -0.00000000000000532907051820075;
             hmmc.Models[0].LogInitial[1] = double.NegativeInfinity;
-            
+
             hmmc.Models[0].LogEmissions[0][0] = -0.693147180559945;
             hmmc.Models[0].LogEmissions[0][1] = -0.693147180559945;
 
@@ -629,8 +767,8 @@ namespace Sequences.HMMs
             hmmc.Models[0].LogTransitions[0][1] = -1.97325207249895;
 
             hmmc.Models[0].LogTransitions[1][0] = -1.92267496034109;
-            hmmc.Models[0].LogTransitions[1][1] = -0.158076246151765; 
-            
+            hmmc.Models[0].LogTransitions[1][1] = -0.158076246151765;
+
             // S
             hmmc.Models[1].LogInitial[0] = -0.00000000000000532907051820075;
             hmmc.Models[1].LogInitial[1] = double.NegativeInfinity;
@@ -664,41 +802,43 @@ namespace Sequences.HMMs
             hmmc.Models[2].LogTransitions[1][1] = -0.216693262802576;
         }
 
-        private void getHmmcMatrix()
+        ///
+
+        private void getHiMaMo()
         {
-            for (int i = 0; i < hmmc.Models.Length; i++)
+            for (int i = 0; i < haeMeM.mModels.Length; i++)
             {
                 Console.WriteLine();
                 Console.WriteLine("Initial : ");
 
-                for (int j = 0; j < hmmc.Models[i].LogInitial.Length; j++)
+                for (int j = 0; j < haeMeM.mModels[i].mLogProbabilityVector.Length; j++)
                 {
-                    Console.WriteLine(hmmc.Models[i].LogInitial[j].ToString("F99").TrimEnd('0'));
+                    Console.WriteLine(haeMeM.mModels[i].mLogProbabilityVector[j].ToString("F99").TrimEnd('0'));
                 }
 
                 Console.WriteLine();
                 Console.WriteLine("Emissions : ");
 
-                for (int j = 0; j < hmmc.Models[i].LogEmissions.Length; j++)
+                for (int j = 0; j < haeMeM.mModels[i].mLogEmissionMatrix.GetLength(0); j++)
                 {
                     Console.WriteLine("Baris : " + j);
 
-                    for (int ke = 0; ke < hmmc.Models[i].LogEmissions[j].Length; ke++)
+                    for (int ke = 0; ke < haeMeM.mModels[i].mLogEmissionMatrix.GetLength(1); ke++)
                     {
-                        Console.WriteLine(hmmc.Models[i].LogEmissions[j][ke]);
+                        Console.WriteLine(haeMeM.mModels[i].mLogEmissionMatrix[j, ke]);
                     }
                 }
 
                 Console.WriteLine();
                 Console.WriteLine("Transitions : ");
 
-                for (int j = 0; j < hmmc.Models[i].LogTransitions.Length; j++)
+                for (int j = 0; j < haeMeM.mModels[i].mLogTransitionMatrix.GetLength(0); j++)
                 {
                     Console.WriteLine("Baris : " + j);
 
-                    for (int ke = 0; ke < hmmc.Models[i].LogTransitions[j].Length; ke++)
+                    for (int ke = 0; ke < haeMeM.mModels[i].mLogTransitionMatrix.GetLength(1); ke++)
                     {
-                        Console.WriteLine(hmmc.Models[i].LogTransitions[j][ke]);
+                        Console.WriteLine(haeMeM.mModels[i].mLogTransitionMatrix[j, ke]);
                     }
                 }
 
@@ -706,98 +846,57 @@ namespace Sequences.HMMs
             }
         }
 
-        private void getHaememMatrix()
+        private void setHiMaMo()
         {
-            for (int i = 0; i < 3; i++) // 3 = classes
-            {
-                Console.WriteLine();
-                Console.WriteLine("Initial : ");
-
-                for (int j = 0; j < haemem.initialModel[i].Length; j++)
-                {
-                    Console.WriteLine(haemem.initialModel[i][j].ToString("F99").TrimEnd('0'));
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Emissions : ");
-
-                for (int j = 0; j < haemem.emissionModel[i].Length; j++)
-                {
-                    Console.WriteLine("Baris : " + j);
-
-                    for (int k = 0; k < haemem.emissionModel[i][j].Length; k++)
-                    {
-                        Console.WriteLine(haemem.emissionModel[i][j][k]);
-                    }
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Transitions : ");
-
-                for (int j = 0; j < haemem.transitionModel[i].Length; j++)
-                {
-                    Console.WriteLine("Baris : " + j);
-
-                    for (int k = 0; k < haemem.transitionModel[i][j].Length; k++)
-                    {
-                        Console.WriteLine(haemem.transitionModel[i][j][k]);
-                    }
-                }
-
-                Console.WriteLine();
-            }
-        }
-
-        private void setMatrix()
-        {
-            // set forward topology
+            haeMeM = new HaeMeM(3, new int[] { 2, 2, 2 }, 2); // 2 symbols
+            
             // F
-            hmmc.Models[0].LogInitial[0] = 0;
-            hmmc.Models[0].LogInitial[1] = double.NegativeInfinity;
+            haeMeM.mModels[0].mLogProbabilityVector[0] = -0.00000000000000532907051820075;
+            haeMeM.mModels[0].mLogProbabilityVector[1] = double.NegativeInfinity;
 
-            hmmc.Models[0].LogEmissions[0][0] = -0.693147180559945;
-            hmmc.Models[0].LogEmissions[0][1] = -0.693147180559945;
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 0] = -5.03499971689081E-05;
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 1] = -9.89653717192396;
 
-            hmmc.Models[0].LogEmissions[1][0] = -0.693147180559945;
-            hmmc.Models[0].LogEmissions[1][1] = -0.693147180559945;
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 0] = -4.3689885090358;
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 1] = -0.0127449161698205;
 
-            hmmc.Models[0].LogTransitions[0][0] = -0.693147180559945;
-            hmmc.Models[0].LogTransitions[0][1] = -0.693147180559945;
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 0] = -0.149661550949128;
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 1] = -1.97327653636094;
 
-            hmmc.Models[0].LogTransitions[1][0] = -0.693147180559945;
-            hmmc.Models[0].LogTransitions[1][1] = -0.693147180559945;
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 0] = -1.92269140744535;
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 1] = -0.158073429521986;
 
             // S
-            hmmc.Models[1].LogInitial[0] = 0;
-            hmmc.Models[1].LogInitial[1] = double.NegativeInfinity;
+            haeMeM.mModels[1].mLogProbabilityVector[0] = -0.00000000000000532907051820075;
+            haeMeM.mModels[1].mLogProbabilityVector[1] = double.NegativeInfinity;
 
-            hmmc.Models[1].LogEmissions[0][0] = -0.693147180559945;
-            hmmc.Models[1].LogEmissions[0][1] = -0.693147180559945;
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 0] = -0.000111085053831061;
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 1] = -9.10526993937915;
 
-            hmmc.Models[1].LogEmissions[1][0] = -0.693147180559945;
-            hmmc.Models[1].LogEmissions[1][1] = -0.693147180559945;
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 0] = -5.71624233150094;
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 1] = -0.00329748889908821;
 
-            hmmc.Models[1].LogTransitions[0][0] = -0.693147180559945;
-            hmmc.Models[1].LogTransitions[0][1] = -0.693147180559945;
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 0] = -0.119154430996792;
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 1] = -2.18632059888411;
 
-            hmmc.Models[1].LogTransitions[1][0] = -0.693147180559945;
-            hmmc.Models[1].LogTransitions[1][1] = -0.693147180559945;
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 0] = -1.65479286937839;
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 1] = -0.212119095404228;
 
             // V
-            hmmc.Models[2].LogInitial[0] = 0;
-            hmmc.Models[2].LogInitial[1] = double.NegativeInfinity;
+            haeMeM.mModels[2].mLogProbabilityVector[0] = -0.00000000000000444089209850063;
+            haeMeM.mModels[2].mLogProbabilityVector[1] = double.NegativeInfinity;
 
-            hmmc.Models[2].LogEmissions[0][0] = -0.693147180559945;
-            hmmc.Models[2].LogEmissions[0][1] = -0.693147180559945;
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 0] = -0.00146927640987471;
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 1] = -6.52371978606421;
 
-            hmmc.Models[2].LogEmissions[1][0] = -0.693147180559945;
-            hmmc.Models[2].LogEmissions[1][1] = -0.693147180559945;
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 0] = -4.53524048530201;
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 1] = -0.0107822479535873;
 
-            hmmc.Models[2].LogTransitions[0][0] = -0.693147180559945;
-            hmmc.Models[2].LogTransitions[0][1] = -0.693147180559945;
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 0] = -0.107012161763762;
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 1] = -2.28784176570574;
 
-            hmmc.Models[2].LogTransitions[1][0] = -0.693147180559945;
-            hmmc.Models[2].LogTransitions[1][1] = -0.693147180559945;
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 0] = -1.6357066766575;
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 1] = -0.216682781482586;
         }
     }
 }

@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -233,30 +233,30 @@
             this.dgvPerformance.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvPerformance.BackgroundColor = System.Drawing.Color.White;
             this.dgvPerformance.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F);
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvPerformance.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvPerformance.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvPerformance.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvPerformance.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvPerformance.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvPerformance.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvPerformance.Location = new System.Drawing.Point(3, 16);
             this.dgvPerformance.Name = "dgvPerformance";
             this.dgvPerformance.ReadOnly = true;
             this.dgvPerformance.RowHeadersVisible = false;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.dgvPerformance.RowsDefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.dgvPerformance.RowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dgvPerformance.Size = new System.Drawing.Size(887, 84);
             this.dgvPerformance.TabIndex = 2;
             // 
@@ -365,9 +365,9 @@
             // 
             this.groupBox3.Controls.Add(this.dgvEmissions);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox3.Location = new System.Drawing.Point(205, 173);
+            this.groupBox3.Location = new System.Drawing.Point(202, 173);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(448, 164);
+            this.groupBox3.Size = new System.Drawing.Size(443, 164);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Emissions";
@@ -378,7 +378,7 @@
             this.dgvEmissions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvEmissions.Location = new System.Drawing.Point(3, 16);
             this.dgvEmissions.Name = "dgvEmissions";
-            this.dgvEmissions.Size = new System.Drawing.Size(442, 145);
+            this.dgvEmissions.Size = new System.Drawing.Size(437, 145);
             this.dgvEmissions.TabIndex = 1;
             // 
             // groupBox7
@@ -391,10 +391,10 @@
             this.groupBox7.Controls.Add(this.button2);
             this.groupBox7.Controls.Add(this.rbStopConvergence);
             this.groupBox7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox7.Location = new System.Drawing.Point(659, 3);
+            this.groupBox7.Location = new System.Drawing.Point(651, 3);
             this.groupBox7.Name = "groupBox7";
             this.tableLayoutPanel1.SetRowSpan(this.groupBox7, 3);
-            this.groupBox7.Size = new System.Drawing.Size(237, 437);
+            this.groupBox7.Size = new System.Drawing.Size(245, 437);
             this.groupBox7.TabIndex = 6;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Training";
@@ -464,7 +464,7 @@
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(67, 409);
+            this.button2.Location = new System.Drawing.Point(75, 409);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(165, 23);
             this.button2.TabIndex = 1;
@@ -487,9 +487,9 @@
             // 
             this.groupBox2.Controls.Add(this.dgvTransitions);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(205, 3);
+            this.groupBox2.Location = new System.Drawing.Point(202, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(448, 164);
+            this.groupBox2.Size = new System.Drawing.Size(443, 164);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Transitions";
@@ -500,7 +500,7 @@
             this.dgvTransitions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvTransitions.Location = new System.Drawing.Point(3, 16);
             this.dgvTransitions.Name = "dgvTransitions";
-            this.dgvTransitions.Size = new System.Drawing.Size(442, 145);
+            this.dgvTransitions.Size = new System.Drawing.Size(437, 145);
             this.dgvTransitions.TabIndex = 1;
             // 
             // groupBox4
@@ -510,7 +510,7 @@
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox4.Location = new System.Drawing.Point(3, 343);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(650, 97);
+            this.groupBox4.Size = new System.Drawing.Size(642, 97);
             this.groupBox4.TabIndex = 0;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "State Probabilities";
@@ -521,7 +521,7 @@
             this.dgvProbabilities.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvProbabilities.Location = new System.Drawing.Point(3, 16);
             this.dgvProbabilities.Name = "dgvProbabilities";
-            this.dgvProbabilities.Size = new System.Drawing.Size(644, 78);
+            this.dgvProbabilities.Size = new System.Drawing.Size(636, 78);
             this.dgvProbabilities.TabIndex = 1;
             // 
             // groupBox1
@@ -531,7 +531,7 @@
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
             this.tableLayoutPanel1.SetRowSpan(this.groupBox1, 2);
-            this.groupBox1.Size = new System.Drawing.Size(196, 334);
+            this.groupBox1.Size = new System.Drawing.Size(193, 334);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Models";
@@ -546,7 +546,7 @@
             this.dgvModels.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvModels.Location = new System.Drawing.Point(3, 16);
             this.dgvModels.Name = "dgvModels";
-            this.dgvModels.Size = new System.Drawing.Size(190, 315);
+            this.dgvModels.Size = new System.Drawing.Size(187, 315);
             this.dgvModels.TabIndex = 1;
             this.dgvModels.CurrentCellChanged += new System.EventHandler(this.dgvModels_CurrentCellChanged);
             // 

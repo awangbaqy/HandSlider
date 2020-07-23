@@ -119,6 +119,7 @@
     <Compile Include="FormHandSlider.Designer.cs">
       <DependentUpon>FormHandSlider.cs</DependentUpon>
     </Compile>
+    <Compile Include="HaeMeM.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormHandSlider.resx">

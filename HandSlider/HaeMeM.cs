@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sequences.HMMs
+namespace HandSlider
 {
     class HaeMeM
     {
@@ -31,8 +31,6 @@ namespace Sequences.HMMs
                 mClassPriors[i] = 1.0 / mClassCount;
             }
         }
-
-        /// Learning
 
         public double Learn(int[][] observations_db, int[] class_labels, int iterations)
         {
@@ -318,8 +316,6 @@ namespace Sequences.HMMs
             }
         }
         
-        /// Likelihood
-
         public int Compute(int[] sequence, out double[] class_probabilities)
         {
             double[] logLikelihoods = new double[mModels.Length];
@@ -393,8 +389,6 @@ namespace Sequences.HMMs
 
             return lnfwd;
         }
-
-        ///
 
         double LogSum(double lna, double lnc)
         {

@@ -28,7 +28,8 @@ namespace HandSlider
         private FilterInfoCollection fic;
         private Graphics graphics, graphicsBlob;
         private Grayscale grayscale;
-        private HiddenMarkovClassifier hmmc;
+        private HaeMeM haeMeM;
+        private HiddenMarkovClassifier hmmc; // HMMC
         private ImageAttributes imageAttributes, imageAttributesBlob;
         private Intersect intersect;
         private List<int> sequenceCodeList;
@@ -45,7 +46,7 @@ namespace HandSlider
         private bool getFrame, foregroundChecked, blobChecked, moveChecked;
         private byte[] pixels;
         private double ye, cebe, ceer, ratio;
-        private int actual;
+        private int actual; // is used
         private int b, i, j, x, y;
         private int bytesPerPixel, byteCount, heightInPixels, widthInBytes, currentLine;
         private int oldBlue, oldGreen, oldRed;
@@ -53,6 +54,8 @@ namespace HandSlider
         private int fps, durationElapsed, delay, timerFrameInterval, duration;
         private string blobPosition, label, hand;
 
+        HistogramEqualization histogramEqualization = new HistogramEqualization();
+        
         public FormHandSlider()
         {
             InitializeComponent();
@@ -98,9 +101,9 @@ namespace HandSlider
 
             // horizontal rectangle
             blobCounter.MinHeight = 15;
-            blobCounter.MaxHeight = 35;
+            //blobCounter.MaxHeight = 35;
             blobCounter.MinWidth = 35;
-            blobCounter.MaxWidth = 75;
+            //blobCounter.MaxWidth = 75;
 
             destinationBitmap.SetResolution(destinationBitmap.HorizontalResolution, destinationBitmap.VerticalResolution);
             getFrame = true;
@@ -353,6 +356,10 @@ namespace HandSlider
             if (!getFrame) { return; }
 
             frame = resizing(eventArgs.Frame);
+
+            if (cbHE.Checked)
+            { frame = histogramEqualization.Apply(frame); }
+
             frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
             frameBackground = frame;
 
@@ -703,9 +710,14 @@ namespace HandSlider
 
         private string getHandLabel(int[] seq)
         {
-            hmmc.LogLikelihood(seq, out actual);
+            //hmmc.LogLikelihood(seq, out actual);
 
-            return hmmc.Models[actual].Tag as string;
+            //return hmmc.Models[actual].Tag as string;
+            
+            double[] likelihood;
+            actual = haeMeM.Compute(seq, out likelihood);
+
+            return actual == 0 ? "F" : actual == 1 ? "S" : "V";
         }
 
         private void moving(Point point, int bitmapHeight, int bitmapWidth)
@@ -743,6 +755,7 @@ namespace HandSlider
             travelX = pointX1 - pointX2;
             travelY = pointY1 - pointY2;
 
+            //if (hand.Equals("KANAN") && blobWidth / 2 < travelX)
             if (hand.Equals("KANAN") && blobWidth / 2 < travelX && travelX < blobWidth * 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KIRI";
@@ -750,6 +763,7 @@ namespace HandSlider
 
                 SendKeys.Send("{DOWN}");
             }
+            //else if (hand.Equals("KIRI") && -blobWidth * 2 < travelX)
             else if (hand.Equals("KIRI") && -blobWidth * 2 < travelX && travelX < -blobWidth / 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE KANAN";
@@ -757,6 +771,7 @@ namespace HandSlider
 
                 SendKeys.Send("{UP}");
             }
+            //else if (-blobHeight * 2 < travelY)
             else if (-blobHeight * 2 < travelY && travelY < -blobHeight / 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE BAWAH";
@@ -764,6 +779,7 @@ namespace HandSlider
 
                 SendKeys.Send("{END}");
             }
+            //else if (blobHeight / 2 < travelY)
             else if (blobHeight / 2 < travelY && travelY < blobHeight * 2)
             {
                 notifyIcon.BalloonTipText = "Gerakan KE ATAS";
@@ -844,29 +860,31 @@ namespace HandSlider
 
         private void datasetTraining()
         {
-            int classes = 3;
-            string[] categories = { "F", "S", "V" };
-            int[] states = { 2, 2, 2 };
+            //int classes = 3;
+            //string[] categories = { "F", "S", "V" };
+            //int[] states = { 2, 2, 2 };
 
-            hmmc = new HiddenMarkovClassifier(classes, states, 3, categories);
+            //hmmc = new HiddenMarkovClassifier(classes, states, 3, categories);
 
-            int iterations = 100;
-            double limit = 0;
+            //int iterations = 100;
+            //double limit = 0;
 
-            HiddenMarkovClassifierLearning teacher = new HiddenMarkovClassifierLearning(hmmc, i =>
-            {
-                return new BaumWelchLearning(hmmc.Models[i])
-                {
-                    MaxIterations = iterations,
-                    Tolerance = limit
-                };
-            });
+            //HiddenMarkovClassifierLearning teacher = new HiddenMarkovClassifierLearning(hmmc, i =>
+            //{
+            //    return new BaumWelchLearning(hmmc.Models[i])
+            //    {
+            //        MaxIterations = iterations,
+            //        Tolerance = limit
+            //    };
+            //});
 
-            teacher.Learn(Dataset.sequencesTraining, Dataset.labelsTraining);
+            //teacher.Learn(Dataset.sequencesTraining, Dataset.labelsTraining);
 
             //getHMMC();
-
             //datasetTesting();
+
+            setHMM();
+            //dataTesting();
 
             timerLabel.Stop();
             timerLabel.Dispose();
@@ -936,6 +954,116 @@ namespace HandSlider
 
                 Console.WriteLine();
             }
+        }
+
+        ///
+
+        private void dataTesting()
+        {
+            int wrong_total, right_total, f_total, ff, fs, fv, s_total, sf, ss, sv, v_total, vf, vs, vv;
+            wrong_total = right_total = f_total = ff = fs = fv = s_total = sf = ss = sv = v_total = vf = vs = vv = 0;
+
+            int[] expected = new int[51];
+            int[] actual = new int[51];
+
+            for (int i = 0; i < 51; i++)
+            {
+                int label = Dataset.labelsTesting[i] == "F" ? 0 : Dataset.labelsTesting[i] == "S" ? 1 : 2;
+                expected[i] = label;
+
+                double[] likelihood;
+                actual[i] = haeMeM.Compute(Dataset.sequencesTesting[i], out likelihood);
+
+                if (actual[i] == expected[i]) { right_total += 1; }
+                if (actual[i] != expected[i]) { wrong_total += 1; }
+
+                string expect = actual[i].ToString();
+
+                if (Dataset.labelsTesting[i].Equals("F"))
+                {
+                    f_total += 1;
+                    if (expect.Equals("0")) { ff += 1; }
+                    if (expect.Equals("1")) { fs += 1; }
+                    if (expect.Equals("2")) { fv += 1; }
+                }
+
+                if (Dataset.labelsTesting[i].Equals("S"))
+                {
+                    s_total += 1;
+                    if (expect.Equals("0")) { sf += 1; }
+                    if (expect.Equals("1")) { ss += 1; }
+                    if (expect.Equals("2")) { sv += 1; }
+                }
+
+                if (Dataset.labelsTesting[i].Equals("V"))
+                {
+                    v_total += 1;
+                    if (expect.Equals("0")) { vf += 1; }
+                    if (expect.Equals("1")) { vs += 1; }
+                    if (expect.Equals("2")) { vv += 1; }
+                }
+            }
+
+            MessageBox.Show(
+                    "benar = " + right_total + " salah = " + wrong_total + "\n" +
+                    "-===- \n" +
+                    "F = " + f_total + " > F = " + ff + " / S = " + fs + " / V = " + fv + "\n" +
+                    "S = " + s_total + " > F = " + sf + " / S = " + ss + " / V = " + sv + "\n" +
+                    "V = " + v_total + " > F = " + vf + " / S = " + vs + " / V = " + vv
+                );
+        }
+
+        private void setHMM()
+        {
+            haeMeM = new HaeMeM(3, new int[] { 2, 2, 2 }, 2); // 2 symbols
+
+            // F
+            haeMeM.mModels[0].mLogProbabilityVector[0] = -0.00000000000000532907051820075;
+            haeMeM.mModels[0].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 0] = -5.03499971689081E-05;
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 1] = -9.89653717192396;
+
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 0] = -4.3689885090358;
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 1] = -0.0127449161698205;
+
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 0] = -0.149661550949128;
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 1] = -1.97327653636094;
+
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 0] = -1.92269140744535;
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 1] = -0.158073429521986;
+
+            // S
+            haeMeM.mModels[1].mLogProbabilityVector[0] = -0.00000000000000532907051820075;
+            haeMeM.mModels[1].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 0] = -0.000111085053831061;
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 1] = -9.10526993937915;
+
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 0] = -5.71624233150094;
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 1] = -0.00329748889908821;
+
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 0] = -0.119154430996792;
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 1] = -2.18632059888411;
+
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 0] = -1.65479286937839;
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 1] = -0.212119095404228;
+
+            // V
+            haeMeM.mModels[2].mLogProbabilityVector[0] = -0.00000000000000444089209850063;
+            haeMeM.mModels[2].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 0] = -0.00146927640987471;
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 1] = -6.52371978606421;
+
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 0] = -4.53524048530201;
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 1] = -0.0107822479535873;
+
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 0] = -0.107012161763762;
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 1] = -2.28784176570574;
+
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 0] = -1.6357066766575;
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 1] = -0.216682781482586;
         }
     }
 }
