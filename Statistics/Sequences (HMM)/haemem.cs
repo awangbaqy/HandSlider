@@ -79,10 +79,7 @@ namespace Sequences.HMMs
         {
             int K = observations_db.Length;
 
-            double[] mLogWeights = new double[K];
-
             int N = mModel.mStateCount;
-            double lnK = System.Math.Log(K);
 
             double[,] logA = mModel.mLogTransitionMatrix;
             double[,] logB = mModel.mLogEmissionMatrix;
@@ -106,8 +103,8 @@ namespace Sequences.HMMs
             }
 
             int maxT = observations_db.Max(x => x.Length);
-            double[,] lnfwd = new double[maxT, N];
-            double[,] lnbwd = new double[maxT, N];
+            double[,] lnfwd = new double[maxT, N]; // Variable forward
+            double[,] lnbwd = new double[maxT, N]; // Variable backward
 
             // Initialize the model log-likelihoods
             double newLogLikelihood = Double.NegativeInfinity;
@@ -126,21 +123,23 @@ namespace Sequences.HMMs
                     int[] observations = observations_db[k];
                     double[,] logGamma = mLogGamma[k];
                     double[][,] logKsi = mLogKsi[k];
-                    double w = mLogWeights[k];
-                    int T = observations.Length;
 
+                    int T = observations.Length;
+                    
                     LogForward(logA, logB, logPi, observations, lnfwd);
                     LogBackward(logA, logB, logPi, observations, lnbwd);
-
+                    
                     // Compute Gamma values
                     for (int t = 0; t < T; ++t)
                     {
                         double lnsum = double.NegativeInfinity;
+
                         for (int i = 0; i < N; ++i)
                         {
-                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i] + w;
+                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i];
                             lnsum = LogSum(lnsum, logGamma[t, i]);
                         }
+
                         if (lnsum != Double.NegativeInfinity)
                         {
                             for (int i = 0; i < N; ++i)
@@ -160,7 +159,7 @@ namespace Sequences.HMMs
                         {
                             for (int j = 0; j < N; ++j)
                             {
-                                logKsi[t][i, j] = lnfwd[t, i] + logA[i, j] + lnbwd[t + 1, j] + logB[j, x] + w;
+                                logKsi[t][i, j] = lnfwd[t, i] + logA[i, j] + lnbwd[t + 1, j] + logB[j, x];
                                 lnsum = LogSum(lnsum, logKsi[t][i, j]);
                             }
                         }
@@ -172,10 +171,10 @@ namespace Sequences.HMMs
                                 logKsi[t][i, j] = logKsi[t][i, j] - lnsum;
                             }
                         }
-
                     }
 
                     newLogLikelihood = Double.NegativeInfinity;
+
                     for (int i = 0; i < N; ++i)
                     {
                         newLogLikelihood = LogSum(newLogLikelihood, lnfwd[T - 1, i]);
@@ -196,18 +195,20 @@ namespace Sequences.HMMs
                 }
                 else
                 {
-                    // update pi
+                    // Update pi
                     for (int i = 0; i < N; ++i)
                     {
                         double lnsum = double.NegativeInfinity;
+
                         for (int k = 0; k < K; ++k)
                         {
                             lnsum = LogSum(lnsum, mLogGamma[k][0, i]);
                         }
-                        logPi[i] = lnsum - lnK;
+
+                        logPi[i] = lnsum;
                     }
 
-                    // update A
+                    // Update A
                     for (int i = 0; i < N; ++i)
                     {
                         for (int j = 0; j < N; ++j)
@@ -217,7 +218,6 @@ namespace Sequences.HMMs
 
                             for (int k = 0; k < K; ++k)
                             {
-
                                 int T = observations_db[k].Length;
 
                                 for (int t = 0; t < T - 1; ++t)
@@ -225,14 +225,13 @@ namespace Sequences.HMMs
                                     lnnum = LogSum(lnnum, mLogKsi[k][t][i, j]);
                                     lndenom = LogSum(lndenom, mLogGamma[k][t, i]);
                                 }
-
                             }
 
                             logA[i, j] = (lnnum == lndenom) ? 0 : lnnum - lndenom;
                         }
                     }
 
-                    // update B
+                    // Update B
                     for (int i = 0; i < N; ++i)
                     {
                         for (int m = 0; m < M; ++m)
@@ -255,6 +254,7 @@ namespace Sequences.HMMs
                                     }
                                 }
                             }
+
                             logB[i, m] = lnnum - lndenom;
                         }
                     }
@@ -324,13 +324,12 @@ namespace Sequences.HMMs
         {
             double[] logLikelihoods = new double[mModels.Length];
             double thresholdValue = Double.NegativeInfinity;
-
-
+            
             Parallel.For(0, mModels.Length + 1, i =>
             {
                 if (i < mModels.Length)
                 {
-                    logLikelihoods[i] = Evaluate(mModels[i], sequence);
+                    LogForward(mModels[i].mLogTransitionMatrix, mModels[i].mLogEmissionMatrix, mModels[i].mLogProbabilityVector, sequence, out logLikelihoods[i]);
                 }
             });
 
@@ -362,18 +361,10 @@ namespace Sequences.HMMs
             class_probabilities = logLikelihoods;
             for (int i = 0; i < logLikelihoods.Length; i++)
             {
-                class_probabilities[i] = System.Math.Exp(logLikelihoods[i]);
+                class_probabilities[i] = 1 - System.Math.Exp(logLikelihoods[i]);
             }
 
             return (thresholdValue > most_likely_model_probablity) ? -1 : most_likely_model_index;
-        }
-
-        double Evaluate(ModelHMM model, int[] sequence)
-        {
-            double logLikelihood;
-            LogForward(model.mLogTransitionMatrix, model.mLogEmissionMatrix, model.mLogProbabilityVector, sequence, out logLikelihood);
-
-            return logLikelihood;
         }
 
         double[,] LogForward(double[,] logA, double[,] logB, double[] logPi, int[] observations, out double logLikelihood)
@@ -426,8 +417,8 @@ namespace Sequences.HMMs
         public double[,] mLogTransitionMatrix;
         public double[,] mLogEmissionMatrix;
         public double[] mLogProbabilityVector;
-        public int mSymbolCount = 0;
-        public int mStateCount = 0;
+        public int mSymbolCount;
+        public int mStateCount;
 
         public ModelHMM(int state_count, int symbol_count)
         {

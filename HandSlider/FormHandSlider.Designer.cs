@@ -49,7 +49,6 @@
             this.rbBGS = new System.Windows.Forms.RadioButton();
             this.rbIntersect = new System.Windows.Forms.RadioButton();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.cbHE = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBlob)).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -244,21 +243,10 @@
             this.notifyIcon.Visible = true;
             this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
             // 
-            // cbHE
-            // 
-            this.cbHE.AutoSize = true;
-            this.cbHE.Location = new System.Drawing.Point(451, 13);
-            this.cbHE.Name = "cbHE";
-            this.cbHE.Size = new System.Drawing.Size(41, 17);
-            this.cbHE.TabIndex = 23;
-            this.cbHE.Text = "HE";
-            this.cbHE.UseVisualStyleBackColor = true;
-            // 
             // FormHandSlider
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(634, 421);
-            this.Controls.Add(this.cbHE);
             this.Controls.Add(this.rbIntersect);
             this.Controls.Add(this.rbBGS);
             this.Controls.Add(this.cbBlobDetection);
@@ -312,7 +300,6 @@
         private System.Windows.Forms.RadioButton rbBGS;
         private System.Windows.Forms.RadioButton rbIntersect;
         private System.Windows.Forms.NotifyIcon notifyIcon;
-        private System.Windows.Forms.CheckBox cbHE;
     }
 }
 

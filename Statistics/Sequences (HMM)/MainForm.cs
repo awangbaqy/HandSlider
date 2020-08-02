@@ -144,7 +144,7 @@ namespace Sequences.HMMs
 
             //dgvModels.DataSource = haeMeM.mModels;
 
-            getHiMaMo();
+            //getHiMaMo();
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Sequences.HMMs
             // Update the GUI
             dgvModels_CurrentCellChanged(this, EventArgs.Empty);
             
-            getHiMaMo();
+            //getHiMaMo();
         }
 
         /// <summary>
@@ -382,7 +382,8 @@ namespace Sequences.HMMs
                 actual[i] = haeMeM.Compute(sequence, out likelihood);
 
                 row.Cells["colTestAssignedClass"].Value = actual[i];
-                row.Cells["colTestLikelihood"].Value = likelihood[0];
+                Console.WriteLine(string.Join(" ", likelihood));
+                row.Cells["colTestLikelihood"].Value = likelihood[actual[i]];
                 row.Cells["colTestMatch"].Value = actual[i] == expected[i];
 
                 if (actual[i] == expected[i]) { right_total += 1; }

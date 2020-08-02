@@ -32,6 +32,8 @@ namespace HandSlider
             }
         }
 
+        /// Learning
+
         public double Learn(int[][] observations_db, int[] class_labels, int iterations)
         {
             int class_count = mClassCount;
@@ -77,10 +79,7 @@ namespace HandSlider
         {
             int K = observations_db.Length;
 
-            double[] mLogWeights = new double[K];
-
             int N = mModel.mStateCount;
-            double lnK = System.Math.Log(K);
 
             double[,] logA = mModel.mLogTransitionMatrix;
             double[,] logB = mModel.mLogEmissionMatrix;
@@ -104,8 +103,8 @@ namespace HandSlider
             }
 
             int maxT = observations_db.Max(x => x.Length);
-            double[,] lnfwd = new double[maxT, N];
-            double[,] lnbwd = new double[maxT, N];
+            double[,] lnfwd = new double[maxT, N]; // Variable forward
+            double[,] lnbwd = new double[maxT, N]; // Variable backward
 
             // Initialize the model log-likelihoods
             double newLogLikelihood = Double.NegativeInfinity;
@@ -124,7 +123,7 @@ namespace HandSlider
                     int[] observations = observations_db[k];
                     double[,] logGamma = mLogGamma[k];
                     double[][,] logKsi = mLogKsi[k];
-                    double w = mLogWeights[k];
+
                     int T = observations.Length;
 
                     LogForward(logA, logB, logPi, observations, lnfwd);
@@ -134,11 +133,13 @@ namespace HandSlider
                     for (int t = 0; t < T; ++t)
                     {
                         double lnsum = double.NegativeInfinity;
+
                         for (int i = 0; i < N; ++i)
                         {
-                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i] + w;
+                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i];
                             lnsum = LogSum(lnsum, logGamma[t, i]);
                         }
+
                         if (lnsum != Double.NegativeInfinity)
                         {
                             for (int i = 0; i < N; ++i)
@@ -158,7 +159,7 @@ namespace HandSlider
                         {
                             for (int j = 0; j < N; ++j)
                             {
-                                logKsi[t][i, j] = lnfwd[t, i] + logA[i, j] + lnbwd[t + 1, j] + logB[j, x] + w;
+                                logKsi[t][i, j] = lnfwd[t, i] + logA[i, j] + lnbwd[t + 1, j] + logB[j, x];
                                 lnsum = LogSum(lnsum, logKsi[t][i, j]);
                             }
                         }
@@ -170,10 +171,10 @@ namespace HandSlider
                                 logKsi[t][i, j] = logKsi[t][i, j] - lnsum;
                             }
                         }
-
                     }
 
                     newLogLikelihood = Double.NegativeInfinity;
+
                     for (int i = 0; i < N; ++i)
                     {
                         newLogLikelihood = LogSum(newLogLikelihood, lnfwd[T - 1, i]);
@@ -194,18 +195,20 @@ namespace HandSlider
                 }
                 else
                 {
-                    // update pi
+                    // Update pi
                     for (int i = 0; i < N; ++i)
                     {
                         double lnsum = double.NegativeInfinity;
+
                         for (int k = 0; k < K; ++k)
                         {
                             lnsum = LogSum(lnsum, mLogGamma[k][0, i]);
                         }
-                        logPi[i] = lnsum - lnK;
+
+                        logPi[i] = lnsum;
                     }
 
-                    // update A
+                    // Update A
                     for (int i = 0; i < N; ++i)
                     {
                         for (int j = 0; j < N; ++j)
@@ -215,7 +218,6 @@ namespace HandSlider
 
                             for (int k = 0; k < K; ++k)
                             {
-
                                 int T = observations_db[k].Length;
 
                                 for (int t = 0; t < T - 1; ++t)
@@ -223,14 +225,13 @@ namespace HandSlider
                                     lnnum = LogSum(lnnum, mLogKsi[k][t][i, j]);
                                     lndenom = LogSum(lndenom, mLogGamma[k][t, i]);
                                 }
-
                             }
 
                             logA[i, j] = (lnnum == lndenom) ? 0 : lnnum - lndenom;
                         }
                     }
 
-                    // update B
+                    // Update B
                     for (int i = 0; i < N; ++i)
                     {
                         for (int m = 0; m < M; ++m)
@@ -253,6 +254,7 @@ namespace HandSlider
                                     }
                                 }
                             }
+
                             logB[i, m] = lnnum - lndenom;
                         }
                     }
@@ -261,12 +263,12 @@ namespace HandSlider
 
             return newLogLikelihood;
         }
-        
+
         void LogForward(double[,] logA, double[,] logB, double[] logPi, int[] observations, double[,] lnfwd)
         {
             int T = observations.Length; // length of the observation
             int N = logPi.Length; // number of states
-            
+
             System.Array.Clear(lnfwd, 0, lnfwd.Length);
 
             for (int i = 0; i < N; ++i)
@@ -315,18 +317,19 @@ namespace HandSlider
                 }
             }
         }
-        
+
+        /// Likelihood
+
         public int Compute(int[] sequence, out double[] class_probabilities)
         {
             double[] logLikelihoods = new double[mModels.Length];
             double thresholdValue = Double.NegativeInfinity;
 
-
             Parallel.For(0, mModels.Length + 1, i =>
             {
                 if (i < mModels.Length)
                 {
-                    logLikelihoods[i] = Evaluate(mModels[i], sequence);
+                    LogForward(mModels[i].mLogTransitionMatrix, mModels[i].mLogEmissionMatrix, mModels[i].mLogProbabilityVector, sequence, out logLikelihoods[i]);
                 }
             });
 
@@ -358,18 +361,10 @@ namespace HandSlider
             class_probabilities = logLikelihoods;
             for (int i = 0; i < logLikelihoods.Length; i++)
             {
-                class_probabilities[i] = System.Math.Exp(logLikelihoods[i]);
+                class_probabilities[i] = 1 - System.Math.Exp(logLikelihoods[i]);
             }
 
             return (thresholdValue > most_likely_model_probablity) ? -1 : most_likely_model_index;
-        }
-
-        double Evaluate(ModelHMM model, int[] sequence)
-        {
-            double logLikelihood;
-            LogForward(model.mLogTransitionMatrix, model.mLogEmissionMatrix, model.mLogProbabilityVector, sequence, out logLikelihood);
-
-            return logLikelihood;
         }
 
         double[,] LogForward(double[,] logA, double[,] logB, double[] logPi, int[] observations, out double logLikelihood)
@@ -389,6 +384,8 @@ namespace HandSlider
 
             return lnfwd;
         }
+
+        ///
 
         double LogSum(double lna, double lnc)
         {
@@ -420,8 +417,8 @@ namespace HandSlider
         public double[,] mLogTransitionMatrix;
         public double[,] mLogEmissionMatrix;
         public double[] mLogProbabilityVector;
-        public int mSymbolCount = 0;
-        public int mStateCount = 0;
+        public int mSymbolCount;
+        public int mStateCount;
 
         public ModelHMM(int state_count, int symbol_count)
         {

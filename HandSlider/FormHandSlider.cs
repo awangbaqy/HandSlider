@@ -46,15 +46,13 @@ namespace HandSlider
         private bool getFrame, foregroundChecked, blobChecked, moveChecked;
         private byte[] pixels;
         private double ye, cebe, ceer, ratio;
-        private int actual; // is used
+        private int actual;
         private int b, i, j, x, y;
         private int bytesPerPixel, byteCount, heightInPixels, widthInBytes, currentLine;
         private int oldBlue, oldGreen, oldRed;
         private int pointX1, pointX2, pointY1, pointY2, blobHeight, blobWidth, travelX, travelY;
         private int fps, durationElapsed, delay, timerFrameInterval, duration;
         private string blobPosition, label, hand;
-
-        HistogramEqualization histogramEqualization = new HistogramEqualization();
         
         public FormHandSlider()
         {
@@ -356,9 +354,6 @@ namespace HandSlider
             if (!getFrame) { return; }
 
             frame = resizing(eventArgs.Frame);
-
-            if (cbHE.Checked)
-            { frame = histogramEqualization.Apply(frame); }
 
             frame.RotateFlip(RotateFlipType.RotateNoneFlipX);
             frameBackground = frame;
