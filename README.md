@@ -1,5 +1,6 @@
 # HandSlider
 Slideshow Powerpoint Navigation With Hand Movement Using Hidden Markov Model Method
+
 *Kendali Navigasi Slideshow Powerpoint Dengan Gerakan Tangan Menggunakan Metode Hidden Markov Model*
 
 ## Pre-Processing Methods
@@ -13,9 +14,13 @@ Slideshow Powerpoint Navigation With Hand Movement Using Hidden Markov Model Met
 ## Classification Method
  - Hidden Markov Model
    > Pisharady, P. K., & Saerbeck, M. (2015). Recent methods and databases in vision-based hand gesture recognition: A review. Computer Vision and Image Understanding, 141, 152–165. https://doi.org/10.1016/j.cviu.2015.08.004
+   
    > Anuj, A., Mallick, T., Das, P. P., & Majumdar, A. K. (2016). Robust control of applications by hand-gestures. 2015 5th National Conference on Computer Vision, Pattern Recognition, Image Processing and Graphics, NCVPRIPG 2015. https://doi.org/10.1109/NCVPRIPG.2015.7490031
+   
    > Eugine Kang. (2017, September 1). Hidden Markov Model - Eugine Kang - Medium. https://medium.com/@kangeugine/hidden-markov-model-7681c22f5b9
+   
    > Setiyoaji, A., Muflikhah, L., & Fauzi, M. A. (2017). Named Entity Recognition Menggunakan Hidden Markov Model dan Algoritma Viterbi pada Teks Tanaman Obat. Jurnal Pengembangan Teknologi Informasi Dan Ilmu Komputer, 1(12), 1858–1864. http://j-ptiik.ub.ac.id/index.php/j-ptiik/article/view/673
+   
    > Firdaniza, Gusriani, N., & Akmal. (2006). Hidden Markov Model.
 
 ## Dataset
@@ -23,15 +28,11 @@ Slideshow Powerpoint Navigation With Hand Movement Using Hidden Markov Model Met
    > Kim, T. K., Wong, S. F., & Cipolla, R. (2007). Tensor canonical correlation analysis for action classification. Proceedings of the IEEE Computer Society Conference on Computer Vision and Pattern Recognition. https://doi.org/10.1109/CVPR.2007.383137
 
 ## Movements
- - Left (only Right Hand) > Next Slide
- *Kiri (hanya Tangan Kanan) > Slide Selanjutnya*
+ - **Left (only Right Hand) > Next Slide** (*Kiri (hanya Tangan Kanan) > Slide Selanjutnya*)
  ![Left](Gif/left.gif)
- - Right (only Left Hand) > Previous Slide
- *Kanan (hanya Tangan Kiri) > Slide Sebelumnya*
+ - **Right (only Left Hand) > Previous Slide** (*Kanan (hanya Tangan Kiri) > Slide Sebelumnya*)
  ![Right](Gif/right.gif)
- - Down > Last Slide
- *Bawah > Slide Akhir*
+ - **Down > Last Slide** (*Bawah > Slide Akhir*)
  ![Down](Gif/down.gif)
- - Up > First Slide
- *Atas > Slide Awal*
+ - **Up > First Slide** (*Atas > Slide Awal*)
  ![Up](Gif/up.gif)
