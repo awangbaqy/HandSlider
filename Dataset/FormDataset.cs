@@ -3,6 +3,7 @@ using Accord.Imaging.Filters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -67,7 +68,11 @@ namespace Dataset
             {0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0},
             {0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0},
         };
-        
+
+        Color color;
+        //Stopwatch stopwatchRGB = new Stopwatch(); Stopwatch stopwatchHSV = new Stopwatch(); Stopwatch stopwatchYCbCr = new Stopwatch();
+        //List<double> elapsedRGB = new List<double>(), elapsedHSV = new List<double>(), elapsedYCbCr = new List<double>();
+
         public FormDataset()
         {
             InitializeComponent();
@@ -76,8 +81,8 @@ namespace Dataset
             binaryErosion3x3 = new BinaryErosion3x3();
             blobCounter = new BlobCounter();
             closingRadius10 = new Closing(kernelShortRadius10);
-            destinationBitmap = new Bitmap(150, 150);
-            destinationRectangle = new Rectangle(0, 0, 150, 150);
+            destinationBitmap = new Bitmap(20, 20);
+            destinationRectangle = new Rectangle(0, 0, 20, 20);
             gaborFilter = new GaborFilter();
             grayscale = Grayscale.CommonAlgorithms.BT709;
             grayscaleToRGB = new GrayscaleToRGB();
@@ -91,75 +96,88 @@ namespace Dataset
 
         private void FormDataset_Load(object sender, EventArgs e)
         {
-            moveTimer.Interval = 1500;
-            moveTimer.Tick += new EventHandler(moveTimer_Tick);
-            moveTimer.Start();
+            //moveTimer.Interval = 1500;
+            //moveTimer.Tick += new EventHandler(moveTimer_Tick);
+            //moveTimer.Start();
 
-            ////Console.WriteLine("F");
-            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Flat", "*.jpg", SearchOption.AllDirectories))
+            //int[] size = new int[] { 5, 10, 15, 20, 25, 30, 35 };
+            //for (int i = 0; i < size.Length; i++)
             //{
-            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+                //Console.WriteLine("ukuran " + size[i]);
+                //destinationBitmap = new Bitmap(size[i], size[i]);
+                //destinationRectangle = new Rectangle(0, 0, size[i], size[i]);
 
-            //    pre_processing(image);
+                //Console.WriteLine("F");
+                foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Flat", "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-            //    //returnedBitmap = pre_processing(image);
-            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+                    pre_processing(image);
+
+                    //returnedBitmap = pre_processing(image);
+                    //returnedBitmap.Save(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+                }
+                //Console.WriteLine("S");
+                foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Spread", "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                    pre_processing(image);
+
+                    //returnedBitmap = pre_processing(image);
+                    //returnedBitmap.Save(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+                }
+                //Console.WriteLine("V");
+                foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Ve", "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                    pre_processing(image);
+
+                    //returnedBitmap = pre_processing(image);
+                    //returnedBitmap.Save(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Training\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+                }
+
+                //Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell");
+
+                // Testing
+                //Console.WriteLine("F");
+                foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Testing\Flat", "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                    pre_processing(image);
+
+                    //returnedBitmap = pre_processing(image);
+                    //returnedBitmap.Save(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Testing\Flat\" + Path.GetFileName(item) + "_blob.jpg");
+                }
+                //Console.WriteLine("S");
+                foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Testing\Spread", "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                    pre_processing(image);
+
+                    //returnedBitmap = pre_processing(image);
+                    //returnedBitmap.Save(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Testing\Spread\" + Path.GetFileName(item) + "_blob.jpg");
+                }
+                //Console.WriteLine("V");
+                foreach (string item in Directory.GetFiles(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Testing\Ve", "*.jpg", SearchOption.AllDirectories))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
+
+                    pre_processing(image);
+
+                    //returnedBitmap = pre_processing(image);
+                    //returnedBitmap.Save(@"B:\My Documents\Polinema\Skripsi\dataset used (set)\==Testing\Ve\" + Path.GetFileName(item) + "_blob.jpg");
+                }
             //}
-            ////Console.WriteLine("S");
-            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Spread", "*.jpg", SearchOption.AllDirectories))
-            //{
-            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
 
-            //    pre_processing(image);
+            //Console.WriteLine("rgb , sum " + elapsedRGB.Sum() + " mean " + (elapsedRGB.Sum() / 526));
+            //Console.WriteLine("hsv , sum " + elapsedHSV.Sum() + " mean " + (elapsedHSV.Sum() / 526));
+            //Console.WriteLine("ybr , sum " + elapsedYCbCr.Sum() + " mean " + (elapsedYCbCr.Sum() / 526));
 
-            //    //returnedBitmap = pre_processing(image);
-            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Spread\" + Path.GetFileName(item) + "_blob.jpg");
-            //}
-            ////Console.WriteLine("V");
-            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Training\Ve", "*.jpg", SearchOption.AllDirectories))
-            //{
-            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
-
-            //    pre_processing(image);
-
-            //    //returnedBitmap = pre_processing(image);
-            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Training\Ve\" + Path.GetFileName(item) + "_blob.jpg");
-            //}
-
-            //Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell"); Console.WriteLine("bloody hell");
-
-            ////Console.WriteLine("F");
-            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Flat", "*.jpg", SearchOption.AllDirectories))
-            //{
-            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
-
-            //    pre_processing(image);
-
-            //    //returnedBitmap = pre_processing(image);
-            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Flat\" + Path.GetFileName(item) + "_blob.jpg");
-            //}
-            ////Console.WriteLine("S");
-            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Spread", "*.jpg", SearchOption.AllDirectories))
-            //{
-            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
-
-            //    pre_processing(image);
-
-            //    //returnedBitmap = pre_processing(image);
-            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Spread\" + Path.GetFileName(item) + "_blob.jpg");
-            //}
-            ////Console.WriteLine("V");
-            //foreach (string item in Directory.GetFiles(@"C:\Users\hp\Desktop\Testing\Ve", "*.jpg", SearchOption.AllDirectories))
-            //{
-            //    System.Drawing.Image image = System.Drawing.Image.FromFile(item);
-
-            //    pre_processing(image);
-
-            //    //returnedBitmap = pre_processing(image);
-            //    //returnedBitmap.Save(@"C:\Users\hp\Desktop\Testing\Ve\" + Path.GetFileName(item) + "_blob.jpg");
-            //}
-
-            //Close();
+            Close();
 
             pictureBox3.SuspendLayout();
             pictureBox3.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox3_Paint);
@@ -240,6 +258,51 @@ namespace Dataset
                     oldGreen = pixels[currentLine + x + 1];
                     oldRed = pixels[currentLine + x + 2];
 
+                    //stopwatchRGB.Start();
+                    //if (oldRed > 95 && oldGreen > 40 && oldBlue > 20 &&
+                    //    (Math.Max(oldRed, Math.Max(oldGreen, oldBlue)) - Math.Min(oldRed, Math.Min(oldGreen, oldBlue))) > 15 &&
+                    //    Math.Abs(oldRed - oldGreen) > 15 && oldRed > oldGreen && oldRed > oldBlue
+                    //   )
+                    //{
+                    //    pixels[currentLine + x] = (byte)255;
+                    //    pixels[currentLine + x + 1] = (byte)255;
+                    //    pixels[currentLine + x + 2] = (byte)255;
+                    //}
+                    //else
+                    //{
+                    //    pixels[currentLine + x] = (byte)0;
+                    //    pixels[currentLine + x + 1] = (byte)0;
+                    //    pixels[currentLine + x + 2] = (byte)0;
+                    //}
+                    //stopwatchRGB.Stop(); elapsedRGB.Add(stopwatchRGB.ElapsedMilliseconds); stopwatchRGB.Reset();
+
+                    //stopwatchHSV.Start();
+                    //color = Color.FromArgb(oldRed, oldGreen, oldBlue);
+                    //hue = color.GetHue();
+                    //saturation = (max == 0) ? 0 : 1d - (1d * min / max);
+                    //value = max / 255d;
+
+                    //if (
+                    //    (
+                    //     (0 < (hue / 360) && (hue / 360) < 0.24) ||
+                    //     (0.74 < (hue / 360) && (hue / 360) < 1)
+                    //    ) &&
+                    //    0.16 < saturation && saturation < 0.79
+                    //   )
+                    //{
+                    //    pixels[currentLine + x] = (byte)255;
+                    //    pixels[currentLine + x + 1] = (byte)255;
+                    //    pixels[currentLine + x + 2] = (byte)255;
+                    //}
+                    //else
+                    //{
+                    //    pixels[currentLine + x] = (byte)0;
+                    //    pixels[currentLine + x + 1] = (byte)0;
+                    //    pixels[currentLine + x + 2] = (byte)0;
+                    //}
+                    //stopwatchHSV.Stop(); elapsedHSV.Add(stopwatchHSV.ElapsedMilliseconds); stopwatchHSV.Reset();
+
+                    //stopwatchYCbCr.Start();
                     ye = (0.299 * oldRed) + (0.587 * oldGreen) + (0.114 * oldBlue);
                     cebe = 128 + (-0.168736 * oldRed) + (-0.331264 * oldGreen) + (0.5 * oldBlue);
                     ceer = 128 + (0.5 * oldRed) + (-0.418688 * oldGreen) + (-0.081312 * oldBlue);
@@ -256,6 +319,7 @@ namespace Dataset
                         pixels[currentLine + x + 1] = (byte)0;
                         pixels[currentLine + x + 2] = (byte)0;
                     }
+                    //stopwatchYCbCr.Stop(); elapsedYCbCr.Add(stopwatchYCbCr.ElapsedMilliseconds); stopwatchYCbCr.Reset();
                 }
             }
 
@@ -580,7 +644,7 @@ namespace Dataset
             }
             textBox1.Text = str;
 
-            Console.WriteLine(str);
+            //Console.WriteLine(str);
 
             //return resultBlobing;
         }

@@ -264,7 +264,7 @@ namespace Sequences.HMMs
             // Update the GUI
             dgvModels_CurrentCellChanged(this, EventArgs.Empty);
             
-            //getHiMaMo();
+            getHiMaMo();
         }
 
         /// <summary>
@@ -273,6 +273,7 @@ namespace Sequences.HMMs
         private void btnTest_Click(object sender, EventArgs e)
         {
             uji(); return;
+
             //setHMMC();
 
             int wrong_total, right_total, f_total, ff, fs, fv, s_total, sf, ss, sv, v_total, vf, vs, vv;
@@ -382,7 +383,7 @@ namespace Sequences.HMMs
                 actual[i] = haeMeM.Compute(sequence, out likelihood);
 
                 row.Cells["colTestAssignedClass"].Value = actual[i];
-                Console.WriteLine(string.Join(" ", likelihood));
+                //Console.WriteLine(string.Join(" ", likelihood));
                 row.Cells["colTestLikelihood"].Value = likelihood[actual[i]];
                 row.Cells["colTestMatch"].Value = actual[i] == expected[i];
 

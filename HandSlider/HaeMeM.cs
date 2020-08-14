@@ -129,26 +129,6 @@ namespace HandSlider
                     LogForward(logA, logB, logPi, observations, lnfwd);
                     LogBackward(logA, logB, logPi, observations, lnbwd);
 
-                    // Compute Gamma values
-                    for (int t = 0; t < T; ++t)
-                    {
-                        double lnsum = double.NegativeInfinity;
-
-                        for (int i = 0; i < N; ++i)
-                        {
-                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i];
-                            lnsum = LogSum(lnsum, logGamma[t, i]);
-                        }
-
-                        if (lnsum != Double.NegativeInfinity)
-                        {
-                            for (int i = 0; i < N; ++i)
-                            {
-                                logGamma[t, i] = logGamma[t, i] - lnsum;
-                            }
-                        }
-                    }
-
                     // Compute Ksi values
                     for (int t = 0; t < T - 1; ++t)
                     {
@@ -173,6 +153,26 @@ namespace HandSlider
                         }
                     }
 
+                    // Compute Gamma values
+                    for (int t = 0; t < T; ++t)
+                    {
+                        double lnsum = double.NegativeInfinity;
+
+                        for (int i = 0; i < N; ++i)
+                        {
+                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i];
+                            lnsum = LogSum(lnsum, logGamma[t, i]);
+                        }
+
+                        if (lnsum != Double.NegativeInfinity)
+                        {
+                            for (int i = 0; i < N; ++i)
+                            {
+                                logGamma[t, i] = logGamma[t, i] - lnsum;
+                            }
+                        }
+                    }
+                    
                     newLogLikelihood = Double.NegativeInfinity;
 
                     for (int i = 0; i < N; ++i)
@@ -271,11 +271,13 @@ namespace HandSlider
 
             System.Array.Clear(lnfwd, 0, lnfwd.Length);
 
+            // Initialization
             for (int i = 0; i < N; ++i)
             {
                 lnfwd[0, i] = logPi[i] + logB[i, observations[0]];
             }
 
+            // Recursion
             for (int t = 1; t < T; ++t)
             {
                 int obs_t = observations[t];
@@ -287,6 +289,8 @@ namespace HandSlider
                     {
                         sum = LogSum(sum, lnfwd[t - 1, j] + logA[j, i]);
                     }
+
+                    // Termination
                     lnfwd[t, i] = sum + logB[i, obs_t];
                 }
             }
@@ -299,11 +303,13 @@ namespace HandSlider
 
             Array.Clear(lnbwd, 0, lnbwd.Length);
 
+            // Initialization
             for (int i = 0; i < N; ++i)
             {
                 lnbwd[T - 1, i] = 0;
             }
 
+            // Recursion
             for (int t = T - 2; t >= 0; t--)
             {
                 for (int i = 0; i < N; ++i)
@@ -313,6 +319,8 @@ namespace HandSlider
                     {
                         sum = LogSum(sum, logA[i, j] + logB[j, observations[t + 1]] + lnbwd[t + 1, j]);
                     }
+
+                    // Termination
                     lnbwd[t, i] += sum;
                 }
             }

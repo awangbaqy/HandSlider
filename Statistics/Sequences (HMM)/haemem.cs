@@ -125,29 +125,9 @@ namespace Sequences.HMMs
                     double[][,] logKsi = mLogKsi[k];
 
                     int T = observations.Length;
-                    
+
                     LogForward(logA, logB, logPi, observations, lnfwd);
                     LogBackward(logA, logB, logPi, observations, lnbwd);
-                    
-                    // Compute Gamma values
-                    for (int t = 0; t < T; ++t)
-                    {
-                        double lnsum = double.NegativeInfinity;
-
-                        for (int i = 0; i < N; ++i)
-                        {
-                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i];
-                            lnsum = LogSum(lnsum, logGamma[t, i]);
-                        }
-
-                        if (lnsum != Double.NegativeInfinity)
-                        {
-                            for (int i = 0; i < N; ++i)
-                            {
-                                logGamma[t, i] = logGamma[t, i] - lnsum;
-                            }
-                        }
-                    }
 
                     // Compute Ksi values
                     for (int t = 0; t < T - 1; ++t)
@@ -169,6 +149,26 @@ namespace Sequences.HMMs
                             for (int j = 0; j < N; ++j)
                             {
                                 logKsi[t][i, j] = logKsi[t][i, j] - lnsum;
+                            }
+                        }
+                    }
+
+                    // Compute Gamma values
+                    for (int t = 0; t < T; ++t)
+                    {
+                        double lnsum = double.NegativeInfinity;
+
+                        for (int i = 0; i < N; ++i)
+                        {
+                            logGamma[t, i] = lnfwd[t, i] + lnbwd[t, i];
+                            lnsum = LogSum(lnsum, logGamma[t, i]);
+                        }
+
+                        if (lnsum != Double.NegativeInfinity)
+                        {
+                            for (int i = 0; i < N; ++i)
+                            {
+                                logGamma[t, i] = logGamma[t, i] - lnsum;
                             }
                         }
                     }
@@ -263,19 +263,21 @@ namespace Sequences.HMMs
 
             return newLogLikelihood;
         }
-        
+
         void LogForward(double[,] logA, double[,] logB, double[] logPi, int[] observations, double[,] lnfwd)
         {
             int T = observations.Length; // length of the observation
             int N = logPi.Length; // number of states
-            
+
             System.Array.Clear(lnfwd, 0, lnfwd.Length);
 
+            // Initialization
             for (int i = 0; i < N; ++i)
             {
                 lnfwd[0, i] = logPi[i] + logB[i, observations[0]];
             }
 
+            // Recursion
             for (int t = 1; t < T; ++t)
             {
                 int obs_t = observations[t];
@@ -287,6 +289,8 @@ namespace Sequences.HMMs
                     {
                         sum = LogSum(sum, lnfwd[t - 1, j] + logA[j, i]);
                     }
+
+                    // Termination
                     lnfwd[t, i] = sum + logB[i, obs_t];
                 }
             }
@@ -299,11 +303,13 @@ namespace Sequences.HMMs
 
             Array.Clear(lnbwd, 0, lnbwd.Length);
 
+            // Initialization
             for (int i = 0; i < N; ++i)
             {
                 lnbwd[T - 1, i] = 0;
             }
 
+            // Recursion
             for (int t = T - 2; t >= 0; t--)
             {
                 for (int i = 0; i < N; ++i)
@@ -313,18 +319,20 @@ namespace Sequences.HMMs
                     {
                         sum = LogSum(sum, logA[i, j] + logB[j, observations[t + 1]] + lnbwd[t + 1, j]);
                     }
+
+                    // Termination
                     lnbwd[t, i] += sum;
                 }
             }
         }
-        
+
         /// Likelihood
 
         public int Compute(int[] sequence, out double[] class_probabilities)
         {
             double[] logLikelihoods = new double[mModels.Length];
             double thresholdValue = Double.NegativeInfinity;
-            
+
             Parallel.For(0, mModels.Length + 1, i =>
             {
                 if (i < mModels.Length)

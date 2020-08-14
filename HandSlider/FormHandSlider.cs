@@ -99,9 +99,9 @@ namespace HandSlider
 
             // horizontal rectangle
             blobCounter.MinHeight = 15;
-            //blobCounter.MaxHeight = 35;
+            blobCounter.MaxHeight = 65;
             blobCounter.MinWidth = 35;
-            //blobCounter.MaxWidth = 75;
+            blobCounter.MaxWidth = 125;
 
             destinationBitmap.SetResolution(destinationBitmap.HorizontalResolution, destinationBitmap.VerticalResolution);
             getFrame = true;
@@ -127,9 +127,9 @@ namespace HandSlider
             timerFPS.Elapsed += TimerFPS_Elapsed;
             timerFPS.AutoReset = true;
 
-            timerLabel.Elapsed += TimerLabel_Elapsed;
-            timerLabel.AutoReset = true;
-            timerLabel.Enabled = true;
+            //timerLabel.Elapsed += TimerLabel_Elapsed;
+            //timerLabel.AutoReset = true;
+            //timerLabel.Enabled = true;
 
             timerFrameInterval = Convert.ToInt16(timerFrame.Interval);
 
@@ -155,7 +155,12 @@ namespace HandSlider
             btnStop.Enabled = false;
 
             // Training
-            thread.Start();
+            //thread.Start();
+            setHMM();
+
+            btnStart.Enabled = true;
+
+            label1.Text = "Aplikasi Siap!";
         }
 
         private void FormHandSlider_Resize(object sender, EventArgs e)
@@ -879,6 +884,8 @@ namespace HandSlider
             //datasetTesting();
 
             setHMM();
+            //setHMM2();
+            //setHMM3();
             //dataTesting();
 
             timerLabel.Stop();
@@ -1059,6 +1066,112 @@ namespace HandSlider
 
             haeMeM.mModels[2].mLogTransitionMatrix[1, 0] = -1.6357066766575;
             haeMeM.mModels[2].mLogTransitionMatrix[1, 1] = -0.216682781482586;
+        }
+
+        private void setHMM2()
+        {
+            haeMeM = new HaeMeM(3, new int[] { 2, 2, 2 }, 2); // 2 symbols
+
+            // F
+            haeMeM.mModels[0].mLogProbabilityVector[0] = 4.60517018598809;
+            haeMeM.mModels[0].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 0] = -0.0282737632060392;
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 1] = -3.5799245723373;
+
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 0] = -2.84917408089784;
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 1] = -0.0596354836935715;
+
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 0] = -0.486080002584086;
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 1] = -0.954596626611644;
+
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 0] = -1.24401842126112;
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 1] = -0.339991579241115;
+
+            // S
+            haeMeM.mModels[1].mLogProbabilityVector[0] = 4.66343909411207;
+            haeMeM.mModels[1].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 0] = -0.00204325325356169;
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 1] = -6.1942334617523;
+
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 0] = -2.04722409378819;
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 1] = -0.138219801536478;
+
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 0] = -0.260224984533663;
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 1] = -1.47350123639483;
+
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 0] = -1.09049463421592;
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 1] = -0.409548780939733;
+
+            // V
+            haeMeM.mModels[2].mLogProbabilityVector[0] = 4.66343909411207;
+            haeMeM.mModels[2].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 0] = -0.130399133146794;
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 1] = -2.10164644672664;
+
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 0] = -1.26825866084412;
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 1] = -0.33034057298523;
+
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 0] = -0.223346270437295;
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 1] = -1.60862744664449;
+
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 0] = -1.28392656597872;
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 1] = -0.32427373471596;
+        }
+
+        private void setHMM3()
+        {
+            haeMeM = new HaeMeM(3, new int[] { 2, 2, 2 }, 2); // 2 symbols
+
+            // F
+            haeMeM.mModels[0].mLogProbabilityVector[0] = 4.49980967033027;
+            haeMeM.mModels[0].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 0] = -0.0323421109261171;
+            haeMeM.mModels[0].mLogEmissionMatrix[0, 1] = -3.44751262559617;
+
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 0] = -3.18798397212082;
+            haeMeM.mModels[0].mLogEmissionMatrix[1, 1] = -0.0421300979258321;
+
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 0] = -0.502925346946061;
+            haeMeM.mModels[0].mLogTransitionMatrix[0, 1] = -0.928259421298462;
+
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 0] = -1.21316535507931;
+            haeMeM.mModels[0].mLogTransitionMatrix[1, 1] = -0.352761001237768;
+
+            // S
+            haeMeM.mModels[1].mLogProbabilityVector[0] = 4.49980967033027;
+            haeMeM.mModels[1].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 0] = -0.00141060935977677;
+            haeMeM.mModels[1].mLogEmissionMatrix[0, 1] = -6.5644387195691;
+
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 0] = -2.09616532607238;
+            haeMeM.mModels[1].mLogEmissionMatrix[1, 1] = -0.131164949382678;
+
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 0] = -0.281310462000217;
+            haeMeM.mModels[1].mLogTransitionMatrix[0, 1] = -1.4056564596633;
+
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 0] = -1.15114008474999;
+            haeMeM.mModels[1].mLogTransitionMatrix[1, 1] = -0.380200925719366;
+
+            // V
+            haeMeM.mModels[2].mLogProbabilityVector[0] = 4.60517018598809;
+            haeMeM.mModels[2].mLogProbabilityVector[1] = double.NegativeInfinity;
+
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 0] = -0.137163436146246;
+            haeMeM.mModels[2].mLogEmissionMatrix[0, 1] = -2.05438003176161;
+
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 0] = -1.39770568075147;
+            haeMeM.mModels[2].mLogEmissionMatrix[1, 1] = -0.28390705428523;
+
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 0] = -0.241516713005511;
+            haeMeM.mModels[2].mLogTransitionMatrix[0, 1] = -1.53914570999587;
+
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 0] = -1.21877591968983;
+            haeMeM.mModels[2].mLogTransitionMatrix[1, 1] = -0.350397223877858;
         }
     }
 }
