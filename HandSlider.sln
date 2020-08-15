@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Morphologing", "Morphologin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sequences (HMM)", "Statistics\Sequences (HMM)\Sequences (HMM).csproj", "{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputationTest", "ComputationTest\ComputationTest.csproj", "{F0477757-C340-497F-A657-DB03592EC4C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,14 @@ Global
 		{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}.Release|Any CPU.ActiveCfg = Release|x86
 		{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}.Release|x86.ActiveCfg = Release|x86
 		{E6CEA943-9111-4CCD-97BD-A63F7DDABBAE}.Release|x86.Build.0 = Release|x86
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Debug|x86.Build.0 = Debug|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Release|x86.ActiveCfg = Release|Any CPU
+		{F0477757-C340-497F-A657-DB03592EC4C2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
