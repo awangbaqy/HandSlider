@@ -1,5 +1,5 @@
 # HandSlider
-Slideshow Powerpoint Navigation With Hand Movement Using Hidden Markov Model Method
+**Slideshow Powerpoint Navigation With Hand Movement Using Hidden Markov Model Method**
 
 *`Kendali Navigasi Slideshow Powerpoint Dengan Gerakan Tangan Menggunakan Metode Hidden Markov Model`*
 
@@ -28,11 +28,11 @@ Slideshow Powerpoint Navigation With Hand Movement Using Hidden Markov Model Met
    > Kim, T. K., Wong, S. F., & Cipolla, R. (2007). Tensor canonical correlation analysis for action classification. Proceedings of the IEEE Computer Society Conference on Computer Vision and Pattern Recognition. https://doi.org/10.1109/CVPR.2007.383137
 
 ## Movements
- - Left (only Right Hand) > Next Slide *`Kiri (hanya Tangan Kanan) > Slide Selanjutnya`*
+ - **Left (only Right Hand) > Next Slide** *`Kiri (hanya Tangan Kanan) > Slide Selanjutnya`*
  ![Left](Gif/left.gif)
- - Right (only Left Hand) > Previous Slide *`Kanan (hanya Tangan Kiri) > Slide Sebelumnya`*
+ - **Right (only Left Hand) > Previous Slide** *`Kanan (hanya Tangan Kiri) > Slide Sebelumnya`*
  ![Right](Gif/right.gif)
- - Down > Last Slide *`Bawah > Slide Akhir`*
+ - **Down > Last Slide** *`Bawah > Slide Akhir`*
  ![Down](Gif/down.gif)
- - Up > First Slide *`Atas > Slide Awal`*
+ - **Up > First Slide** *`Atas > Slide Awal`*
  ![Up](Gif/up.gif)
