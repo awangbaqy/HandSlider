@@ -125,7 +125,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(457, 336);
             this.label1.TabIndex = 9;
-            this.label1.Text = "Menyiapkan Dataset...";
+            this.label1.Text = "Aplikasi Siap!";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pictureBoxBlob

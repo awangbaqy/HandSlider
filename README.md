@@ -3,6 +3,8 @@
 
 *`Kendali Navigasi Slideshow Powerpoint Dengan Gerakan Tangan Menggunakan Metode Hidden Markov Model`*
 
+![Left](Media/ss.png)
+
 ## Pre-Processing Methods
  - Background Subtraction
    > Elsayed, R. A., Sayed, M. S., & Abdalla, M. I. (2016). Skin-based adaptive background subtraction for hand gesture segmentation. Proceedings of the IEEE International Conference on Electronics, Circuits, and Systems, 2016-March, 33–36. https://doi.org/10.1109/ICECS.2015.7440242
@@ -29,10 +31,10 @@
 
 ## Movements
  - **Left (only Right Hand) > Next Slide** *`Kiri (hanya Tangan Kanan) > Slide Selanjutnya`*
- ![Left](Gif/left.gif)
+ ![Left](Media/left.gif)
  - **Right (only Left Hand) > Previous Slide** *`Kanan (hanya Tangan Kiri) > Slide Sebelumnya`*
- ![Right](Gif/right.gif)
+ ![Right](Media/right.gif)
  - **Down > Last Slide** *`Bawah > Slide Akhir`*
- ![Down](Gif/down.gif)
+ ![Down](Media/down.gif)
  - **Up > First Slide** *`Atas > Slide Awal`*
- ![Up](Gif/up.gif)
+ ![Up](Media/up.gif)
