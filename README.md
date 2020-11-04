@@ -14,7 +14,7 @@
    > Kakkoth, S. S., & Gharge, S. (2018). Visual Descriptors Based Real Time Hand Gesture Recognition. 2018 International Conference On Advances in Communication and Computing Technology, ICACCT 2018, 361–367. https://doi.org/10.1109/ICACCT.2018.8529663
 
 ## Classification Method
- - Hidden Markov Model
+ - Hidden Markov Model (Code : [cs-hidden-markov-models](https://github.com/chen0040/cs-hidden-markov-models))
    > Pisharady, P. K., & Saerbeck, M. (2015). Recent methods and databases in vision-based hand gesture recognition: A review. Computer Vision and Image Understanding, 141, 152–165. https://doi.org/10.1016/j.cviu.2015.08.004
    
    > Anuj, A., Mallick, T., Das, P. P., & Majumdar, A. K. (2016). Robust control of applications by hand-gestures. 2015 5th National Conference on Computer Vision, Pattern Recognition, Image Processing and Graphics, NCVPRIPG 2015. https://doi.org/10.1109/NCVPRIPG.2015.7490031
